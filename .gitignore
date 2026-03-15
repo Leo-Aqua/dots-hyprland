@@ -21,3 +21,7 @@ dots/.config/fish/fish_variables
 dots/.config/fish/conf.d/fish_frozen_key_bindings.fish
 dots/.config/fish/conf.d/fish_frozen_theme.fish
 dots/.local/share/fish/fish_history
+
+# Ignore ZapZap database and cache
+dots/.local/share/ZapZap/db/zapzap.db
+dots/.local/share/ZapZap/QtWebEngine/storage-whats/Service Worker/ScriptCache/index-dir/the-real-index
