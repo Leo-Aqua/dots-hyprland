@@ -43,7 +43,7 @@ ColumnLayout {
         Layout.fillHeight: false
         Layout.fillWidth: true
         Layout.bottomMargin: 6
-        model: root.devices.map(node => Audio.friendlyDeviceName(node))
+        model: root.devices.map(node => Audio.appNodeDisplayName(node))
         currentIndex: root.devices.findIndex(item => {
             if (root.isSink) {
                 return item.id === Pipewire.defaultAudioSink?.id
