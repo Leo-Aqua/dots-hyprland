@@ -1,8 +1,15 @@
-DOTS=$(dirname "$(realpath $0)")
+#!/bin/bash
+# Replaces all existing dotfiles with symlinks to the development ones for easier development 
+DOTS=$(dirname "$(realpath "$0")")
 
-rm -rf ~/.config/quickshell
-ln -s $DOTS/dots/.config/quickshell ~/.config/quickshell
+for dir in "$DOTS/dots/.config"/*/; do
+    name=$(basename "$dir")
+    rm -rf ~/.config/"$name"
+    ln -s "$dir" ~/.config/"$name"
+done
 
-rm -rf ~/.config/hypr
-ln -s $DOTS/dots/.config/hypr ~/.config/hypr
-   # repeat for any other dirs you plan to modify
+for dir in "$DOTS/dots/.local"/*/; do
+    name=$(basename "$dir")
+    rm -rf ~/.local/"$name"
+    ln -s "$dir" ~/.local/"$name"
+done
