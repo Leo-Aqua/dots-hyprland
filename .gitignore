@@ -25,3 +25,24 @@ dots/.local/share/fish/fish_history
 # Ignore ZapZap database and cache
 dots/.local/share/ZapZap/db/zapzap.db
 dots/.local/share/ZapZap/QtWebEngine/storage-whats/Service Worker/ScriptCache/index-dir/the-real-index
+
+# fuzzel
+dots/.config/fuzzel/fuzzel_theme.ini
+
+# hyprland
+dots/.config/hypr/hyprland/colors.conf
+dots/.config/hypr/hyprlock/colors.conf
+
+# gvfs metadata
+dots/.local/share/gvfs-metadata
+
+# kactivitymanagerd
+dots/.local/share/kactivitymanagerd
+
+# Thumbnails
+*.xbel
+*.bak
+*.tbcache
+
+
+dots/.config/fish/conf.d/rustup.fish
