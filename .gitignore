@@ -15,6 +15,8 @@ __pycache__/
 
 # Emacs auto backup file
 *~
+
+# Ignore fish shell history and variables
 dots/.config/fish/fish_variables
 dots/.config/fish/conf.d/fish_frozen_key_bindings.fish
 dots/.config/fish/conf.d/fish_frozen_theme.fish
