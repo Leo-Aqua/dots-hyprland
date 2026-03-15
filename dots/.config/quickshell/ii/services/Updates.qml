@@ -55,4 +55,17 @@ Singleton {
             }
         }
     }
+
+    // For debugging purposes, allows simulating updates without actually needing them
+    IpcHandler {
+        target: "updates"
+        function fake(amount: int): void {
+            root.available = true;
+            root.count = amount;
+        }
+        
+        function refresh(): void {
+            root.refresh();
+        }
+    }
 }

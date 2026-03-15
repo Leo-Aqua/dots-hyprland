@@ -108,6 +108,8 @@ Item { // Bar content region
         }
         spacing: 4
 
+        
+
         BarGroup {
             id: leftCenterGroup
             anchors.verticalCenter: parent.verticalCenter
@@ -185,6 +187,14 @@ Item { // Bar content region
                 }
             }
         }
+        
+        UpdatesButton {
+            visible: Updates.updateAdvised || Updates.updateStronglyAdvised
+            id: updateIndicator
+            anchors.verticalCenter: parent.verticalCenter
+            
+        }
+        
     }
 
     FocusedScrollMouseArea { // Right side | scroll to change volume
