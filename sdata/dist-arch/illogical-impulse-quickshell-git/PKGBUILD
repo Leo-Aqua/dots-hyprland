@@ -26,6 +26,7 @@ depends=(
   'libdrm'
   'mesa'
   'google-breakpad'
+  'rose-pine-hyprcursor'
   # NOTE: Below are custom dependencies of illogical-impulse
   qt6-5compat 
   qt6-avif-image-plugin
