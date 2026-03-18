@@ -20,11 +20,8 @@ __pycache__/
 dots/.config/fish/fish_variables
 dots/.config/fish/conf.d/fish_frozen_key_bindings.fish
 dots/.config/fish/conf.d/fish_frozen_theme.fish
-dots/.local/share/fish/fish_history
 
-# Ignore ZapZap database and cache
-dots/.local/share/ZapZap/db/zapzap.db
-dots/.local/share/ZapZap/QtWebEngine/storage-whats/Service Worker/ScriptCache/index-dir/the-real-index
+
 
 # fuzzel
 dots/.config/fuzzel/fuzzel_theme.ini
@@ -33,12 +30,6 @@ dots/.config/fuzzel/fuzzel_theme.ini
 dots/.config/hypr/hyprland/colors.conf
 dots/.config/hypr/hyprlock/colors.conf
 
-# gvfs metadata
-dots/.local/share/gvfs-metadata
-
-# kactivitymanagerd
-dots/.local/share/kactivitymanagerd
-
 # Thumbnails
 *.xbel
 *.bak
@@ -46,3 +37,14 @@ dots/.local/share/kactivitymanagerd
 
 
 dots/.config/fish/conf.d/rustup.fish
+
+# Custom Hyprland stuff
+dots/.config/hypr/custom
+
+# only keep Important files in .local
+dots/.local
+!dots/.local/icons
+!dots/.local/icons/**
+
+!dots/.local/konsole
+!dots/.local/konsole/**
