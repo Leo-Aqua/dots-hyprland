@@ -1,5 +1,5 @@
 # only keep Important files in .local
-dots/.local
+dots/.local/**
 !dots/.local/icons
 !dots/.local/icons/**
 !dots/.local/konsole
@@ -7,7 +7,7 @@ dots/.local
 
 
 # Only keep modified config directories
-dots/.config
+dots/.config/**
 !dots/.config/Kvantum
 !dots/.config/Kvantum/**
 !dots/.config/fish
@@ -89,7 +89,10 @@ dots/.config/hypr/hyprlock/colors.conf
 *.xbel
 *.bak
 *.tbcache
-dots/.config/fish/conf.d/rustup.fish
+
+
+# Fish conf.d
+dots/.config/fish/conf.d/**
 
 
 # Custom Hyprland stuff
