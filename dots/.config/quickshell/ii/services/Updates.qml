@@ -67,5 +67,17 @@ Singleton {
         function refresh(): void {
             root.refresh();
         }
+        
+        function log() {
+            
+            console.log("Update Count: " + root.count);
+            console.log("Update Available: " + root.available);
+            
+            console.log("Update checking: " + root.checking);
+            console.log("Update advised: " + root.updateAdvised);
+            console.log("Update strongly advised: " + root.updateStronglyAdvised);
+            
+            
+        }
     }
 }
