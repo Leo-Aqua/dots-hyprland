@@ -1,20 +1,74 @@
+# only keep Important files in .local
+dots/.local
+!dots/.local/icons
+!dots/.local/icons/**
+!dots/.local/konsole
+!dots/.local/konsole/**
+
+
+# Only keep modified config directories
+dots/.config
+!dots/.config/Kvantum
+!dots/.config/Kvantum/**
+!dots/.config/fish
+!dots/.config/fish/**
+!dots/.config/fontconfig
+!dots/.config/fontconfig/**
+!dots/.config/foot
+!dots/.config/foot/**
+!dots/.config/fuzzel
+!dots/.config/fuzzel/**
+!dots/.config/hypr
+!dots/.config/hypr/**
+!dots/.config/kde-material-you-colors
+!dots/.config/kde-material-you-colors/**
+!dots/.config/kitty
+!dots/.config/kitty/**
+!dots/.config/matugen
+!dots/.config/matugen/**
+!dots/.config/mpv
+!dots/.config/mpv/**
+!dots/.config/quickshell
+!dots/.config/quickshell/ii
+!dots/.config/quickshell/ii/**
+!dots/.config/wlogout
+!dots/.config/wlogout/**
+!dots/.config/xdg-desktop-portal
+!dots/.config/xdg-desktop-portal/**
+!dots/.config/zshrc.d
+!dots/.config/zshrc.d/**
+
+
+# and files
+!dots/.config/chrome-flags.conf
+!dots/.config/code-flags.conf
+!dots/.config/darklyrc
+!dots/.config/dolphinrc
+!dots/.config/kdeglobals
+!dots/.config/konsolerc
+!dots/.config/starship.toml
+!dots/.config/thorium-flags.conf
 /diagnose.result
 /cache
+
 
 # Ignore Python cache files
 __pycache__/
 *.py[cod]
-
 /dots/.config/quickshell/ii/.qmlls.ini
+
 
 # exp-update
 /.update-lock
 
+
 # custom os-release
 /os-release
 
+
 # Emacs auto backup file
 *~
+
 
 # Ignore fish shell history and variables
 dots/.config/fish/fish_variables
@@ -22,29 +76,22 @@ dots/.config/fish/conf.d/fish_frozen_key_bindings.fish
 dots/.config/fish/conf.d/fish_frozen_theme.fish
 
 
-
 # fuzzel
 dots/.config/fuzzel/fuzzel_theme.ini
+
 
 # hyprland
 dots/.config/hypr/hyprland/colors.conf
 dots/.config/hypr/hyprlock/colors.conf
 
+
 # Thumbnails
 *.xbel
 *.bak
 *.tbcache
-
-
 dots/.config/fish/conf.d/rustup.fish
+
 
 # Custom Hyprland stuff
 dots/.config/hypr/custom
 
-# only keep Important files in .local
-dots/.local
-!dots/.local/icons
-!dots/.local/icons/**
-
-!dots/.local/konsole
-!dots/.local/konsole/**
