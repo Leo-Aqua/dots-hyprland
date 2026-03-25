@@ -1,0 +1,19 @@
+[general]
+mode = waves
+framerate = 60
+autosens = 1
+bars = 200
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+channels = stereo
+reverse = 1
+mono_option = average
+
+[smoothing]
+noise_reduction = 50
+
+
+
