@@ -118,7 +118,6 @@ Variants {
                     // Parse `;`-separated values into the visualizerPoints array
                     let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
                     bgRoot.visualizerPoints = points;
-                    console.log("Background Vis: " + points)
                 }
             }
         }
