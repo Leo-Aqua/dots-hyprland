@@ -16,8 +16,9 @@ Canvas { // Visualizer
     onPointsChanged: () => {
         root.requestPaint()
     }
-
-    anchors.fill: parent
+    
+    // make fill editable
+    //anchors.fill: parent
     onPaint: {
         var ctx = getContext("2d");
         ctx.clearRect(0, 0, width, height);
