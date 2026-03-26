@@ -12,7 +12,9 @@ Canvas { // Visualizer
     property int smoothing: 2
     property bool live: true
     property color color: Appearance.m3colors.m3primary
-
+    
+    property real transparency: 0.15
+    
     onPointsChanged: () => {
         root.requestPaint()
     }
@@ -57,7 +59,7 @@ Canvas { // Visualizer
             root.color.r,
             root.color.g,
             root.color.b,
-            0.15
+            root.transparency
         );
         ctx.fill();
     }
