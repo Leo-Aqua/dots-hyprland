@@ -349,7 +349,10 @@ Variants {
                 }
                 
                 
-                // Still hard coded enabled for now
+                
+                
+            }
+            // Still hard coded enabled for now
                 // TODO: Add config entry and Settings switch to toggle/configure visualizer
                 Repeater {
                     model: ScriptModel { values: bgRoot.meaningfulPlayers }
@@ -382,8 +385,6 @@ Variants {
                         Behavior on opacity { NumberAnimation { duration: 500 } }
                     }
                 }
-                
-            }
         }
     }
 }
