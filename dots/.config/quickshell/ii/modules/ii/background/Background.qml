@@ -356,18 +356,31 @@ Variants {
                     delegate: WaveVisualizer {
                         required property MprisPlayer modelData
                         
-                        // This will now work because anchors.fill was removed from the source
-                        anchors.bottom: parent.bottom
+                        // Anchor to the sides, but handle vertical positioning with 'y'
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        height: parent.height * 0.5 // 20% of screen height
                         
+                        // 1. Set a fixed height relative to the screen (e.g., 20% of monitor height)
+                        // This prevents the visualizer from growing with the wallpaper scale.
+                        height: bgRoot.screen.height * 0.3
+                        
+                        // 2. Explicitly calculate the Y position to stick to the monitor bottom
+                        y: {
+                            if (widgetCanvas.state === "centered") {
+                                return parent.height - height;
+                            }
+                            
+                            
+                            const canvasOffset = wallpaper.y + widgetCanvas.anchors.topMargin;
+                            return (bgRoot.screen.height - height) - canvasOffset;
+                        }
+
                         live: bgRoot.visible && modelData.playbackStatus === MprisPlaybackStatus.Playing
                         points: bgRoot.visualizerPoints
                         maxVisualizerValue: bgRoot.maxVisualizerValue
                         smoothing: bgRoot.visualizerSmoothing
                         
-                        opacity: modelData.playbackStatus === MprisPlaybackStatus.Playing ? 0.6 : 0
+                        transparency: 0.4
                         Behavior on opacity { NumberAnimation { duration: 500 } }
                     }
                 }
