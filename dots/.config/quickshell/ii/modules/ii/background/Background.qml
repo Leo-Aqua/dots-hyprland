@@ -362,18 +362,8 @@ Variants {
                         // Anchor to the sides, but handle vertical positioning with 'y'
                         anchors.left: parent.left
                         anchors.right: parent.right
-                        
+                        anchors.bottom: parent.bottom
                         height: bgRoot.screen.height * 0.3
-                        
-                        y: {
-                            if (widgetCanvas.state === "centered") {
-                                return parent.height - height;
-                            }
-                            
-                            
-                            const canvasOffset = wallpaper.y + widgetCanvas.anchors.topMargin;
-                            return (bgRoot.screen.height - height) - canvasOffset;
-                        }
                         
 
                         live: bgRoot.visible && modelData.playbackStatus === MprisPlaybackStatus.Playing
