@@ -20,8 +20,14 @@ RippleButtonWithIcon {
         id: updatepopup
         anchors.fill: parent
         hoverEnabled: !Config.options.bar.tooltips.clickToShow
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: {
-            Quickshell.execDetached(["bash", "-c", Config.options.apps.update]);
+            if (mouse.button === Qt.RightButton) { 
+                Quickshell.execDetached(["notify-send", "-a", "Quickshell", "Updater", "Searching for updates..."]);
+                Updates.refresh();
+            } else if (mouse.button === Qt.LeftButton) {
+                Quickshell.execDetached(["bash", "-c", Config.options.apps.update]);
+            }
         }
         UpdatesButtonPopup {
             hoverTarget: updatepopup
