@@ -80,6 +80,10 @@ apply_qt() {
   python "$CONFIG_DIR/scripts/kvantum/changeAdwColors.py" # apply config colors
 }
 
+apply_discord() {
+   python "$CONFIG_DIR/scripts/colors/discord/apply_discord.py"      
+}
+
 # Check if terminal theming is enabled in config
 CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
 if [ -f "$CONFIG_FILE" ]; then
@@ -93,3 +97,4 @@ else
 fi
 
 # apply_qt & # Qt theming is already handled by kde-material-colors
+apply_discord &
