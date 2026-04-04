@@ -89,12 +89,3 @@ dots/.config/hypr/hyprlock/colors.conf
 *.xbel
 *.bak
 *.tbcache
-
-
-# Fish conf.d
-dots/.config/fish/conf.d/**
-
-
-# Custom Hyprland stuff
-dots/.config/hypr/custom
-
