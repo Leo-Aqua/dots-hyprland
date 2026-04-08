@@ -21,12 +21,12 @@ Singleton {
     }
 
     function suspend() {
-        Quickshell.execDetached(["hyprshutdown", "bash", "-c", "systemctl suspend || loginctl suspend"]);
+        Quickshell.execDetached(["bash", "-c", "systemctl suspend || loginctl suspend"]);
     }
 
     function logout() {
         closeAllWindows();
-        Quickshell.execDetached(["hyprshutdown", "&&", "pkill", "-i", "Hyprland"]);
+        Quickshell.execDetached(["pkill", "-i", "Hyprland"]);
     }
 
     function launchTaskManager() {
@@ -34,21 +34,21 @@ Singleton {
     }
 
     function hibernate() {
-        Quickshell.execDetached(["hyprshutdown", "bash", "-c", `systemctl hibernate || loginctl hibernate`]);
+        Quickshell.execDetached(["bash", "-c", `systemctl hibernate || loginctl hibernate`]);
     }
 
     function poweroff() {
         closeAllWindows();
-        Quickshell.execDetached(["hyprshutdown", "bash", "-c", `systemctl poweroff || loginctl poweroff`]);
+        Quickshell.execDetached(["bash", "-c", `systemctl poweroff || loginctl poweroff`]);
     }
 
     function reboot() {
         closeAllWindows();
-        Quickshell.execDetached(["hyprshutdown", "bash", "-c", `reboot || loginctl reboot`]);
+        Quickshell.execDetached(["bash", "-c", `reboot || loginctl reboot`]);
     }
 
     function rebootToFirmware() {
         closeAllWindows();
-        Quickshell.execDetached(["hyprshutdown", "bash", "-c", `systemctl reboot --firmware-setup || loginctl reboot --firmware-setup`]);
+        Quickshell.execDetached(["bash", "-c", `systemctl reboot --firmware-setup || loginctl reboot --firmware-setup`]);
     }
 }
