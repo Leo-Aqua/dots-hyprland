@@ -222,9 +222,17 @@ Item { // Bar content region
         implicitWidth: rightSectionRowLayout.implicitWidth
         implicitHeight: Appearance.sizes.baseBarHeight
 
-        onScrollDown: Audio.decrementVolume();
-        onScrollUp: Audio.incrementVolume();
-        onMovedAway: GlobalStates.osdVolumeOpen = false;
+        onScrollDown: {
+            const currentVolume = Audio.value;
+            const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
+            Audio.sink.audio.volume -= step;
+        }
+        onScrollUp: {
+            const currentVolume = Audio.value;
+            const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
+            Audio.sink.audio.volume = Math.min(1, Audio.sink.audio.volume + step);
+        }
+        onMovedAway: GlobalStates.osdVolumeOpen = false
         onPressed: event => {
             if (event.button === Qt.LeftButton) {
                 GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
@@ -359,6 +367,17 @@ Item { // Bar content region
 
                 sourceComponent: BarGroup {
                     WeatherBar {}
+                }
+            }
+
+            // Network Speed
+            Loader {
+                Layout.leftMargin: 8
+                Layout.fillHeight: true
+                active: Config.options.bar.networkSpeed.enable
+                sourceComponent: BarGroup {
+                    implicitHeight: Appearance.sizes.baseBarHeight
+                    NetworkSpeed {}
                 }
             }
         }
