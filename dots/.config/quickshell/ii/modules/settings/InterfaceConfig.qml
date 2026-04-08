@@ -287,6 +287,14 @@ ContentPage {
                 Config.options.overlay.darkenScreen = checked;
             }
         }
+        ConfigSwitch {
+            buttonIcon: "Key"
+            text: Translation.tr("Activate Linux overlay")
+            checked: Config.options.overlay.activateLinux
+            onCheckedChanged: {
+                Config.options.overlay.activateLinux = checked;
+            }
+        }
     }
 
     ContentSection {
