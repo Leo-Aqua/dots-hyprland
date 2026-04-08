@@ -12,11 +12,13 @@ charset-normalizer==3.4.7
     # via requests
 click==8.2.1
     # via -r requirements.in
-cryptography==46.0.0
+cryptography==45.0.7
     # via google-auth
 dbus-python==1.4.0
     # via kde-material-you-colors
 google-auth==2.49.1
+    # via -r requirements.in
+hyprland-config==0.4.1
     # via -r requirements.in
 idna==3.11
     # via requests
