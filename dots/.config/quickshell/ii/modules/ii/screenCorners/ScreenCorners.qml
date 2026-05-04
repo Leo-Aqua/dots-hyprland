@@ -8,7 +8,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
-
+import Quickshell.Io
 Scope {
     id: screenCorners
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
@@ -24,7 +24,21 @@ Scope {
         property var screen: QsWindow.window?.screen
         property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
         property bool fullscreen
-        visible: (Config.options.appearance.fakeScreenRounding === 1 || (Config.options.appearance.fakeScreenRounding === 2 && !fullscreen))
+property bool specialGameActive: false
+property bool isGameWorkspace: Hyprland.focusedMonitor?.activeWorkspace?.name === "special:game" || specialGameActive
+
+Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+        if (event.name === "activespecial") {
+            specialGameActive = event.data.startsWith("special:game")
+        }
+    }
+}
+
+visible: (Config.options.appearance.fakeScreenRounding === 1 ||
+         (Config.options.appearance.fakeScreenRounding === 2 && !fullscreen && !isGameWorkspace))
+
         property var corner
 
         exclusionMode: ExclusionMode.Ignore
