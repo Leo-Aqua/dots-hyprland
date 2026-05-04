@@ -29,3 +29,12 @@ if status is-interactive
     end
     
 end
+
+# Android stuff
+set -x ANDROID_HOME $HOME/Android/Sdk
+fish_add_path $ANDROID_HOME/cmdline-tools/latest/bin
+fish_add_path $ANDROID_HOME/platform-tools
+
+set -gx GTK_USE_PORTAL 1
+
+set -x OLLAMA_ORIGINS "http://*,https://*,onlyoffice://*"
