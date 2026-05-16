@@ -1,5 +1,5 @@
 [Appearance]
-ColorScheme=MaterialYou
+ColorScheme=Aritim Dark
 
 [General]
 Command=/bin/fish
@@ -10,3 +10,6 @@ Parent=FALLBACK/
 [Keyboard]
 KeyBindings=default
 
+[Terminal Features]
+AnimatingCursorEnabled=true
+BlinkingCursorEnabled=false
