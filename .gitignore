@@ -83,7 +83,8 @@ dots/.config/fuzzel/fuzzel_theme.ini
 # hyprland
 dots/.config/hypr/hyprland/colors.conf
 dots/.config/hypr/hyprlock/colors.conf
-
+dots/.config/hypr/hyprland/colors.lua
+dots/.config/hypr/hyprlock/colors.lua
 
 # Thumbnails
 *.xbel
