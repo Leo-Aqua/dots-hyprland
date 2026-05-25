@@ -50,68 +50,56 @@ import Quickshell.Hyprland
 
 ShellRoot {
     id: root
+    property string openRgbApplyScript: Quickshell.shellPath("scripts/colors/openRGB/apply_openrgb.py")
+    property bool openRgbStartupApplied: false
 
     // Stuff for every panel family
     ReloadPopup {}
 
     Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme()
-        Hyprsunset.load()
-        FirstRunExperience.load()
-        ConflictKiller.load()
-        Cliphist.refresh()
-        Wallpapers.load()
-        Updates.load()
+        MaterialThemeLoader.reapplyTheme();
+        Hyprsunset.load();
+        FirstRunExperience.load();
+        ConflictKiller.load();
+        Cliphist.refresh();
+        Wallpapers.load();
+        Updates.load();
+        root.applyOpenRgbIfEnabled();
     }
 
-    // Load enabled stuff
-    // Well, these loaders only *allow* them to be loaded, to always load or not is defined in each component
-    // The media controls for example is not loaded if it's not opened
-    PanelLoader { identifier: "iiBar"; extraCondition: !Config.options.bar.vertical; component: Bar {} }
-    PanelLoader { identifier: "iiBackground"; component: Background {} }
-    PanelLoader { identifier: "iiCheatsheet"; component: Cheatsheet {} }
-    PanelLoader { identifier: "iiDock"; extraCondition: Config.options.dock.enable; component: Dock {} }
-    PanelLoader { identifier: "iiLock"; component: Lock {} }
-    PanelLoader { identifier: "iiMediaControls"; component: MediaControls {} }
-    LazyLoader { active: Config.ready; component: LyricsSelector {} }
-    PanelLoader { identifier: "iiNotificationPopup"; component: NotificationPopup {} }
-    PanelLoader { identifier: "iiOnScreenDisplay"; component: OnScreenDisplay {} }
-    PanelLoader { identifier: "iiOnScreenKeyboard"; component: OnScreenKeyboard {} }
-    PanelLoader { identifier: "iiOverlay"; component: Overlay {} }
-    PanelLoader { identifier: "iiOverview"; component: Overview {} }
-    PanelLoader { identifier: "iiPolkit"; component: Polkit {} }
-    PanelLoader { identifier: "iiRegionSelector"; component: RegionSelector {} }
-    PanelLoader { identifier: "iiScreenCorners"; component: ScreenCorners {} }
-    PanelLoader { identifier: "iiSessionScreen"; component: SessionScreen {} }
-    PanelLoader { identifier: "iiSidebarLeft"; component: SidebarLeft {} }
-    PanelLoader { identifier: "iiSidebarRight"; component: SidebarRight {} }
-    PanelLoader { identifier: "iiVerticalBar"; extraCondition: Config.options.bar.vertical; component: VerticalBar {} }
-    PanelLoader { identifier: "iiWallpaperSelector"; component: WallpaperSelector {} }
+    function applyOpenRgbIfEnabled() {
+        if (openRgbStartupApplied)
+            return;
+        if (!Config.ready)
+            return;
+        if (!Config.options?.appearance?.openrgb?.enable)
+            return;
+        if (!Config.options?.appearance?.openrgb?.applyOnStartup)
+            return;
+        openRgbStartupApplied = true;
+        openRgbApplyProc.command = ["python", openRgbApplyScript];
+        openRgbApplyProc.running = false;
+        openRgbApplyProc.running = true;
+    }
 
-    PanelLoader { identifier: "wActionCenter"; component: WaffleActionCenter {} }
-    PanelLoader { identifier: "wBar"; component: WaffleBar {} }
-    PanelLoader { identifier: "wBackground"; component: WaffleBackground {} }
-    PanelLoader { identifier: "wLock"; component: WaffleLock {} }
-    PanelLoader { identifier: "wNotificationCenter"; component: WaffleNotificationCenter {} }
-    PanelLoader { identifier: "wOnScreenDisplay"; component: WaffleOSD {} }
-    PanelLoader { identifier: "wPolkit"; component: WafflePolkit {} }
-    PanelLoader { identifier: "wStartMenu"; component: WaffleStartMenu {} }
-    PanelLoader { identifier: "wSessionScreen"; component: WaffleSessionScreen {} }
-    PanelLoader { identifier: "wTaskView"; component: WaffleTaskView {} }
-    ReloadPopup {}
+    Connections {
+        target: Config
+        function onReadyChanged() {
+            if (Config.ready)
+                root.applyOpenRgbIfEnabled();
+        }
+    }
 
-    component PanelLoader: LazyLoader {
-        required property string identifier
-        property bool extraCondition: true
-        active: Config.ready && Config.options.enabledPanels.includes(identifier) && extraCondition
+    Process {
+        id: openRgbApplyProc
     }
 
     // Panel families
     property list<string> families: ["ii", "waffle"]
     function cyclePanelFamily() {
-        const currentIndex = families.indexOf(Config.options.panelFamily)
-        const nextIndex = (currentIndex + 1) % families.length
-        Config.options.panelFamily = families[nextIndex]
+        const currentIndex = families.indexOf(Config.options.panelFamily);
+        const nextIndex = (currentIndex + 1) % families.length;
+        Config.options.panelFamily = families[nextIndex];
     }
 
     component PanelFamilyLoader: LazyLoader {
@@ -119,7 +107,7 @@ ShellRoot {
         property bool extraCondition: true
         active: Config.ready && Config.options.panelFamily === identifier && extraCondition
     }
-    
+
     PanelFamilyLoader {
         identifier: "ii"
         component: IllogicalImpulseFamily {}
@@ -130,13 +118,12 @@ ShellRoot {
         component: WaffleFamily {}
     }
 
-
     // Shortcuts
     IpcHandler {
         target: "panelFamily"
 
         function cycle(): void {
-            root.cyclePanelFamily()
+            root.cyclePanelFamily();
         }
     }
 
@@ -147,4 +134,3 @@ ShellRoot {
         onPressed: root.cyclePanelFamily()
     }
 }
-
