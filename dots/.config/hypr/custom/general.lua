@@ -179,16 +179,16 @@ if hl.plugin.hyprglass then
         -- glass_opacity        = 0.2,
         brightness           = 1,
         adaptive_dim         = 0,
-        refraction_strength  = 0.4,
-        chromatic_aberration = 0.5,
+        refraction_strength  = 0.6,
+        chromatic_aberration = 0.2,
         fresnel_strength     = .2,
         specular_strength    = 0,
-        lens_distortion      = 1.5,
+        lens_distortion      = 1.8,
         vibrancy             = 10,
-        tint_color           = 0x00000070,
-        blur_strength        = .12,
-        blur_iterations      = 5,
-        saturation           = 1.1
+        tint_color           = 0x80808000,
+        blur_strength        = 0,
+        blur_iterations      = 0,
+        -- saturation           = 1.1
 
     })
 
