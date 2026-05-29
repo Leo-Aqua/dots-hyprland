@@ -82,9 +82,6 @@ apply_discord() {
     python "$CONFIG_DIR/scripts/colors/discord/apply_discord.py"
 }
 
-apply_openrgb() {
-    python "$CONFIG_DIR/scripts/colors/openRGB/apply_openrgb.py"
-}
 
 # Check if terminal theming is enabled in config
 CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
@@ -93,6 +90,13 @@ if [ -f "$CONFIG_FILE" ]; then
     if [ "$enable_terminal" = "true" ]; then
         apply_term &
     fi
+
+    enable_openrgb=$(jq -r '.appearance.openRGB.enabled' "$CONFIG_FILE")
+    if [ "$enable_openrgb" = "true" ]; then
+        echo openrgb
+        openrgb_duration=$(jq -r '.appearance.openRGB.fadeDuration' "$CONFIG_FILE")
+        python "$CONFIG_DIR/scripts/colors/openRGB/apply_openrgb.py" -d $openrgb_duration
+    fi
 else
     echo "Config file not found at $CONFIG_FILE. Applying terminal theming by default."
     apply_term &
@@ -100,5 +104,3 @@ fi
 
 # apply_qt & # Qt theming is already handled by kde-material-colors
 apply_discord &
-
-apply_openrgb &
