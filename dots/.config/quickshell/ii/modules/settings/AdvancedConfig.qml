@@ -29,7 +29,9 @@ ContentPage {
                 text: Translation.tr("Shell & utilities theming must also be enabled")
             }
         }
+
         ConfigSwitch {
+            id: terminal_toggle
             buttonIcon: "terminal"
             text: Translation.tr("Terminal")
             checked: Config.options.appearance.wallpaperTheming.enableTerminal
@@ -42,12 +44,14 @@ ContentPage {
         }
         ConfigRow {
             uniform: true
+            enabled: terminal_toggle.checked
             ConfigSwitch {
                 buttonIcon: "dark_mode"
                 text: Translation.tr("Force dark mode in terminal")
                 checked: Config.options.appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode
                 onCheckedChanged: {
-                     Config.options.appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode= checked;
+                    Config.options.appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode
+                            = checked;
                 }
                 StyledToolTip {
                     text: Translation.tr("Ignored if terminal theming is not enabled")
@@ -56,6 +60,7 @@ ContentPage {
         }
 
         ConfigSpinBox {
+            enabled: terminal_toggle.checked
             icon: "invert_colors"
             text: Translation.tr("Terminal: Harmony (%)")
             value: Config.options.appearance.wallpaperTheming.terminalGenerationProps.harmony * 100
@@ -73,6 +78,7 @@ ContentPage {
             from: 0
             to: 100
             stepSize: 10
+            enabled: terminal_toggle.checked
             onValueChanged: {
                 Config.options.appearance.wallpaperTheming.terminalGenerationProps.harmonizeThreshold = value;
             }
@@ -84,6 +90,7 @@ ContentPage {
             from: 0
             to: 100
             stepSize: 10
+            enabled: terminal_toggle.checked
             onValueChanged: {
                 Config.options.appearance.wallpaperTheming.terminalGenerationProps.termFgBoost = value / 100;
             }
