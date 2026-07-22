@@ -48,3 +48,5 @@ hl.bind("SUPER + KP_Add", hl.dsp.exec_cmd("~/.config/hypr/hyprland/scripts/zoom.
 hl.bind("SUPER + ALT + C", hl.dsp.window.center())
 -- hl.bind("SUPER + ALT + C", hl.dsp.window.resize({ x = 900, y = 700, "exact" }))
 -- TODO: Game workspace
+
+

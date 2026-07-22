@@ -160,7 +160,7 @@ if hl.plugin.hyprglass then
     local hg = hl.plugin.hyprglass
 
     hg.config({
-        enabled = true,
+        enabled = false,
         default_theme = "dark",
         default_preset = "vibrant",
         tint_color = 0x8899aa22,
