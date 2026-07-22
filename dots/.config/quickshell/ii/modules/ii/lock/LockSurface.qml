@@ -9,6 +9,7 @@ import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.modules.common.panels.lock
 import qs.modules.ii.bar as Bar
+import qs.modules.ii.mediaControls
 import Quickshell
 import Quickshell.Services.SystemTray
 
@@ -68,7 +69,7 @@ MouseArea {
         }
         if (event.key === Qt.Key_Escape) { // Esc to clear
             root.context.currentText = "";
-        } 
+        }
         forceFieldFocus();
     }
     Keys.onReleased: event => {
@@ -96,6 +97,14 @@ MouseArea {
     //     }
     // }
 
+    MediaControlsWidget {
+        anchors {
+            top: parent.top
+            horizontalCenter: mainIsland.horizontalCenter
+        }
+        disableVisualizer: true
+        noPlaceholder: true
+    }
     // Main toolbar: password box
     Toolbar {
         id: mainIsland
@@ -131,7 +140,8 @@ MouseArea {
         ToolbarTextField {
             id: passwordBox
             Layout.rightMargin: -Layout.leftMargin
-            placeholderText: GlobalStates.screenUnlockFailed ? Translation.tr("Incorrect password") : Translation.tr("Enter password")
+            placeholderText: GlobalStates.screenUnlockFailed ? Translation.tr("Incorrect password") :
+                                                               Translation.tr("Enter password")
 
             // Style
             clip: true
@@ -159,7 +169,7 @@ MouseArea {
             Keys.onPressed: event => {
                 root.context.resetClearTimer();
             }
-            
+
             layer.enabled: true
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
@@ -177,7 +187,8 @@ MouseArea {
             Connections {
                 target: GlobalStates
                 function onScreenUnlockFailedChanged() {
-                    if (GlobalStates.screenUnlockFailed) wrongPasswordShakeAnim.restart();
+                    if (GlobalStates.screenUnlockFailed)
+                        wrongPasswordShakeAnim.restart();
                 }
             }
 
@@ -305,7 +316,9 @@ MouseArea {
             visible: Battery.available
             icon: Battery.isCharging ? "bolt" : "battery_android_full"
             text: Math.round(Battery.percentage * 100)
-            color: (Battery.isLow && !Battery.isCharging) ? Appearance.colors.colError : Appearance.colors.colOnSurfaceVariant
+            color: (Battery.isLow && !Battery.isCharging) ? Appearance.colors.colError :
+                                                            Appearance.colors.colOnSurfaceVariant
+
         }
 
         IconToolbarButton {
@@ -357,7 +370,6 @@ MouseArea {
         Layout.fillHeight: true
         Layout.leftMargin: 10
         Layout.rightMargin: 10
-        
 
         MaterialSymbol {
             anchors.verticalCenter: parent.verticalCenter
