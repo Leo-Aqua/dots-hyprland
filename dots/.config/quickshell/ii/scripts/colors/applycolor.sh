@@ -64,11 +64,10 @@ apply_anyterm() {
     
     sed -i "s/\$alpha/$term_alpha/g" "$STATE_DIR/user/generated/terminal/sequences.txt"
     
-    for file in /dev/pts/*; do
-        if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
-            {
-                cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
-            } & disown || true
+    # Finds pts devices belonging to active user interactive shells only
+    for pts in $(ps -u "$USER" -o tty= | grep 'pts/' | sort -u); do
+        if [[ -w "/dev/$pts" ]]; then
+            cat "$STATE_DIR/user/generated/terminal/sequences.txt" > "/dev/$pts" 2>/dev/null & disown || true
         fi
     done
 }
@@ -90,7 +89,7 @@ if [ -f "$CONFIG_FILE" ]; then
     if [ "$enable_terminal" = "true" ]; then
         apply_term &
     fi
-
+    
     enable_openrgb=$(jq -r '.appearance.openrgb.enable' "$CONFIG_FILE")
     if [ "$enable_openrgb" = "true" ]; then
         openrgb_duration=$(jq -r '.appearance.openrgb.fadeDuration' "$CONFIG_FILE")
