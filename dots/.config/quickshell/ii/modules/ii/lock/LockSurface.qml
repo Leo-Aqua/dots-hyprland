@@ -99,7 +99,7 @@ MouseArea {
 
     MediaControlsWidget {
         anchors {
-            top: parent.top
+            bottom: mainIsland.top
             horizontalCenter: mainIsland.horizontalCenter
         }
         disableVisualizer: true
