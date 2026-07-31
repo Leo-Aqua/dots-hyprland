@@ -93,13 +93,18 @@ hl.bind("SUPER + SHIFT + ALT + R", hl.dsp.exec_cmd(qsScripts .. "/videos/record.
     { locked = true, description = "Utilities: Record screen (with sound)" })
 --# Fullscreen screenshot
 local grimhyprctl = "grim -o \"$(hyprctl activeworkspace -j | jq -r '.monitor')\""
-hl.bind("Print", hl.dsp.exec_cmd(grimhyprctl .. " - | wl-copy"),
+hl.bind("Print",
+    hl.dsp.exec_cmd(grimhyprctl ..
+        " - | wl-copy | notify-send 'Screenshot' 'Screenshot copied to clipboard' -a 'Hyperland'"),
     { locked = true, description = "Utilities: Screenshot >> clipboard" })
 hl.bind("CTRL + Print", hl.dsp.exec_cmd(
     "mkdir -p $(xdg-user-dir PICTURES)/Screenshots && " ..
     grimhyprctl .. " $(xdg-user-dir PICTURES)/Screenshots/Screenshot_\"$(date '+%Y-%m-%d_%H.%M.%S')\".png"
 ), { locked = true, non_consuming = true, description = "Utilities: Screenshot >> clipboard & file" })
-hl.bind("CTRL + Print", hl.dsp.exec_cmd(grimhyprctl .. " - | wl-copy"), { locked = true, non_consuming = true })
+hl.bind("CTRL + Print",
+    hl.dsp.exec_cmd(
+        "bash -c \"grimhyprctl - | wl-copy | notify-send 'Screenshot' 'Screenshot saved to $(xdg-user-dir PICTURES)/Screenshots/Screenshot_\"$(date '+%Y-%m-%d_%H.%M.%S')\".png' -a 'Hyperland'\""),
+    { locked = true, non_consuming = true })
 --# AI
 hl.bind("SUPER + SHIFT + ALT + mouse:273", hl.dsp.exec_cmd(hyprScripts .. "/ai/primary-buffer-query.sh"),
     { description = "Utilities: Generate AI summary for selected text" })
@@ -229,7 +234,8 @@ for i = 1, 2 do
     local keydirs = { "Up", "Down" }
     local prefix = { "r-", "r+" }
     local descdir = { "left", "right" }
-    hl.bind("SUPER + SHIFT + Page_" .. keydirs[i], hl.dsp.window.move({ workspace = prefix[i] .. "1" }), {description = "Window: Send to workspace " .. descdir[i]})
+    hl.bind("SUPER + SHIFT + Page_" .. keydirs[i], hl.dsp.window.move({ workspace = prefix[i] .. "1" }),
+        { description = "Window: Send to workspace " .. descdir[i] })
 end
 for i = 1, 4 do
     local key = { "SUPER + ALT + Page_", "CTRL + SUPER + SHIFT + " }
@@ -271,7 +277,8 @@ for i = 1, 2 do
     local keys = { "Left", "Right" }
     local prefix = { "r-", "r+" }
     local descdir = { "left", "right" }
-    hl.bind("CTRL + SUPER + " .. keys[i], hl.dsp.focus({ workspace = prefix[i] .. "1" }), {description = "Workspace: Focus " .. descdir[i]})
+    hl.bind("CTRL + SUPER + " .. keys[i], hl.dsp.focus({ workspace = prefix[i] .. "1" }),
+        { description = "Workspace: Focus " .. descdir[i] })
 end
 for i = 1, 2 do
     local keys = { "Left", "Right" }
