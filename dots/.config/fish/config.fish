@@ -33,9 +33,10 @@ if status is-interactive
 end
 
 # Android stuff
-set -x ANDROID_HOME $HOME/Android/Sdk
-fish_add_path $ANDROID_HOME/cmdline-tools/latest/bin
+set -gx ANDROID_HOME $HOME/Android/Sdk
+fish_add_path $ANDROID_HOME/emulator
 fish_add_path $ANDROID_HOME/platform-tools
+
 
 set -gx GTK_USE_PORTAL 1
 
