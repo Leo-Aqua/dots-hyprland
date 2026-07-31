@@ -90,3 +90,6 @@ dots/.config/hypr/hyprlock/colors.lua
 *.xbel
 *.bak
 *.tbcache
+
+# VScode
+.vscode
