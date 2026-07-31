@@ -30,7 +30,7 @@ StyledPopup {
                 StyledPopupValueRow {
                     icon: "clock_loader_60"
                     label: Translation.tr("Used:")
-                    value: root.formatKB(ResourceUsage.memoryUsed)
+                    value: root.formatKB(ResourceUsage.memoryUsed) + ` (${Math.round(ResourceUsage.memoryUsedPercentage * 100).toString()}%)`
                 }
 
                 StyledPopupValueRow {
@@ -44,9 +44,7 @@ StyledPopup {
                     label: Translation.tr("Total:")
                     value: root.formatKB(ResourceUsage.memoryTotal)
                 }
-
             }
-
         }
 
         Column {
@@ -65,7 +63,7 @@ StyledPopup {
                 StyledPopupValueRow {
                     icon: "clock_loader_60"
                     label: Translation.tr("Used:")
-                    value: root.formatKB(ResourceUsage.swapUsed)
+                    value: root.formatKB(ResourceUsage.swapUsed) + ` (${Math.round(ResourceUsage.swapUsedPercentage * 100).toString()}%)`
                 }
 
                 StyledPopupValueRow {
@@ -79,9 +77,7 @@ StyledPopup {
                     label: Translation.tr("Total:")
                     value: root.formatKB(ResourceUsage.swapTotal)
                 }
-
             }
-
         }
 
         Column {
@@ -99,32 +95,27 @@ StyledPopup {
                 StyledPopupValueRow {
                     icon: "bolt"
                     label: Translation.tr("Load:")
-                    value: ` (${Math.round(ResourceUsage.cpuUsage * 100)}%`
+                    value: `${Math.round(ResourceUsage.cpuUsage * 100)}%`
                 }
 
                 StyledPopupValueRow {
                     icon: "planner_review"
                     label: Translation.tr("Freq:")
-                    value: ` ${ Math.round(ResourceUsage.cpuFreqency * 100) / 100} GHz`
+                    value: ` ${Math.round(ResourceUsage.cpuFreqency * 100) / 100} GHz`
                 }
 
                 StyledPopupValueRow {
                     icon: "thermometer"
                     label: Translation.tr("Temp:")
-                    value: ` ${ Math.round(ResourceUsage.cpuTemperature)} °C`
+                    value: ` ${Math.round(ResourceUsage.cpuTemperature)} °C`
                 }
-
             }
-
         }
 
         ColumnLayout {
             Layout.alignment: Qt.AlignTop
             spacing: 8
-            visible: (Config.options?.resources?.enableGpu !== false) &&
-                     (Config.options?.resources?.gpu?.bar?.showIGpu !== false) &&
-                     GpuUsage.iGpuAvailable &&
-                     (Config.options.bar.resources.gpuLayout == 1 || Config.options.bar.resources.gpuLayout == 2)
+            visible: (Config.options?.resources?.enableGpu !== false) && (Config.options?.resources?.gpu?.bar?.showIGpu !== false) && GpuUsage.iGpuAvailable && (Config.options.bar.resources.gpuLayout == 1 || Config.options.bar.resources.gpuLayout == 2)
 
             StyledPopupHeaderRow {
                 icon: "empty_dashboard"
@@ -135,7 +126,7 @@ StyledPopup {
                 StyledPopupValueRow {
                     icon: "bolt"
                     label: Translation.tr("Load:")
-                    value: (GpuUsage.iGpuUsage > 0.8 ? Translation.tr("High") : GpuUsage.iGpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(GpuUsage.iGpuUsage  * 100)}%)`
+                    value: (GpuUsage.iGpuUsage > 0.8 ? Translation.tr("High") : GpuUsage.iGpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(GpuUsage.iGpuUsage * 100)}%)`
                     visible: Config.options?.resources?.gpu?.bar?.iGpu?.showUsage !== false
                 }
 
@@ -152,18 +143,13 @@ StyledPopup {
                     value: `${GpuUsage.iGpuTemperature} °C`
                     visible: Config.options?.resources?.gpu?.bar?.iGpu?.showTemp !== false
                 }
-
             }
-
         }
 
         ColumnLayout {
             Layout.alignment: Qt.AlignTop
             spacing: 8
-            visible: (Config.options?.resources?.enableGpu !== false) &&
-                     (Config.options?.resources?.gpu?.bar?.showDGpu !== false) &&
-                     GpuUsage.dGpuAvailable &&
-                     (Config.options.bar.resources.gpuLayout == 0 || Config.options.bar.resources.gpuLayout == 2)
+            visible: (Config.options?.resources?.enableGpu !== false) && (Config.options?.resources?.gpu?.bar?.showDGpu !== false) && GpuUsage.dGpuAvailable && (Config.options.bar.resources.gpuLayout == 0 || Config.options.bar.resources.gpuLayout == 2)
 
             StyledPopupHeaderRow {
                 icon: "empty_dashboard"
@@ -174,7 +160,7 @@ StyledPopup {
                 StyledPopupValueRow {
                     icon: "bolt"
                     label: Translation.tr("Load:")
-                    value: (GpuUsage.dGpuUsage > 0.8 ? Translation.tr("High") : GpuUsage.dGpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(GpuUsage.dGpuUsage  * 100)}%)`
+                    value: (GpuUsage.dGpuUsage > 0.8 ? Translation.tr("High") : GpuUsage.dGpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(GpuUsage.dGpuUsage * 100)}%)`
                     visible: Config.options?.resources?.gpu?.bar?.dGpu?.showUsage !== false
                 }
 
@@ -191,11 +177,7 @@ StyledPopup {
                     value: `${GpuUsage.dGpuTemperature} °C`
                     visible: Config.options?.resources?.gpu?.bar?.dGpu?.showTemp !== false
                 }
-
             }
-
         }
-
     }
-
 }
