@@ -5,6 +5,11 @@ import QtQuick.Layouts
 
 MouseArea {
     id: root
+
+    function formatKB(kb) {
+        return (kb / (1024 * 1024)).toFixed(1) + " GB";
+    }
+
     property bool borderless: Config.options.bar.borderless
     property bool alwaysShowAllResources: false
     implicitWidth: rowLayout.implicitWidth + rowLayout.anchors.leftMargin + rowLayout.anchors.rightMargin
@@ -22,13 +27,17 @@ MouseArea {
         Resource {
             iconName: "memory"
             percentage: ResourceUsage.memoryUsedPercentage
+            absoluteValue: Config.options.bar.resources.memoryInGB ? root.formatKB(ResourceUsage.memoryUsed) : undefined
+            shown: Config.options.bar.resources.showMemory && ((Config.options.bar.resources.alwaysShowMemory || percentage > Config.options.bar.resources.showMemoryThreshhold / 100) && (MprisController.activePlayer?.trackTitle == null) || root.alwaysShowAllResources)
             warningThreshold: Config.options.bar.resources.memoryWarningThreshold
         }
 
         Resource {
             iconName: "swap_horiz"
             percentage: ResourceUsage.swapUsedPercentage
-            shown: (Config.options.bar.resources.alwaysShowSwap && percentage > 0) || (MprisController.activePlayer?.trackTitle == null) || root.alwaysShowAllResources
+            absoluteValue: Config.options.bar.resources.memoryInGB ? root.formatKB(ResourceUsage.swapUsed) : undefined
+            shown: Config.options.bar.resources.showSwap && ((Config.options.bar.resources.alwaysShowSwap || percentage > Config.options.bar.resources.showSwapThreshhold / 100) && (MprisController.activePlayer?.trackTitle == null) || root.alwaysShowAllResources)
+
             Layout.leftMargin: shown ? 6 : 0
             warningThreshold: Config.options.bar.resources.swapWarningThreshold
         }
@@ -36,7 +45,7 @@ MouseArea {
         Resource {
             iconName: "planner_review"
             percentage: ResourceUsage.cpuUsage
-            shown: Config.options.bar.resources.alwaysShowCpu || !(MprisController.activePlayer?.trackTitle?.length > 0) || root.alwaysShowAllResources
+            shown: Config.options.bar.resources.showCPU && ((Config.options.bar.resources.alwaysShowCpu || percentage > Config.options.bar.resources.showCPUThreshhold / 100) && (MprisController.activePlayer?.trackTitle == null) || root.alwaysShowAllResources)
             Layout.leftMargin: shown ? 6 : 0
 
             warningThreshold: Config.options.bar.resources.cpuWarningThreshold

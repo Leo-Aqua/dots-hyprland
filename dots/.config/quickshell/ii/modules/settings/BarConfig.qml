@@ -19,7 +19,7 @@ ContentPage {
             }
         }
     }
-    
+
     ContentSection {
         icon: "spoke"
         title: Translation.tr("Positioning")
@@ -85,7 +85,7 @@ ContentPage {
         }
 
         ConfigRow {
-            
+
             ContentSubsection {
                 title: Translation.tr("Corner style")
                 Layout.fillWidth: true
@@ -142,6 +142,110 @@ ContentPage {
     }
 
     ContentSection {
+        icon: "memory"
+        title: Translation.tr("Resources")
+
+        ConfigSwitch {
+            text: Translation.tr("Show memory/swap in GB")
+            checked: Config.options.bar.resources.memoryInGB
+            onCheckedChanged: {
+                Config.options.bar.resources.memoryInGB = checked;
+            }
+        }
+        ConfigSwitch {
+            text: Translation.tr("Show memory")
+            buttonIcon: "memory"
+            checked: Config.options.bar.resources.showMemory
+            onCheckedChanged: {
+                Config.options.bar.resources.showMemory = checked;
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Always show memory")
+            checked: Config.options.bar.resources.alwaysShowMemory
+            enabled: Config.options.bar.resources.showMemory
+            onCheckedChanged: {
+                Config.options.bar.resources.alwaysShowMemory = checked;
+            }
+        }
+
+        ConfigSpinBox {
+            enabled: Config.options.bar.resources.showMemory && !Config.options.bar.resources.alwaysShowMemory
+            text: Translation.tr("Show memory threshhold %")
+            value: Config.options.bar.resources.showMemoryThreshhold
+            from: 0
+            to: 100
+            stepSize: 1
+            onValueChanged: {
+                Config.options.bar.resources.showMemoryThreshhold = value;
+                console.log(Config.options.bar.resources.showMemoryThreshhold);
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Show swap")
+            buttonIcon: "swap_horiz"
+            checked: Config.options.bar.resources.showSwap
+            onCheckedChanged: {
+                Config.options.bar.resources.showSwap = checked;
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Always show swap")
+            checked: Config.options.bar.resources.alwaysShowSwap
+            enabled: Config.options.bar.resources.showSwap
+            onCheckedChanged: {
+                Config.options.bar.resources.alwaysShowSwap = checked;
+            }
+        }
+
+        ConfigSpinBox {
+            enabled: Config.options.bar.resources.showSwap && !Config.options.bar.resources.alwaysShowSwap
+            text: Translation.tr("Show swap threshhold %")
+            value: Config.options.bar.resources.showSwapThreshhold
+            from: 0
+            to: 100
+            stepSize: 1
+            onValueChanged: {
+                Config.options.bar.resources.showSwapThreshhold = value;
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Show CPU")
+            buttonIcon: "planner_review"
+            checked: Config.options.bar.resources.showCPU
+            onCheckedChanged: {
+                Config.options.bar.resources.showCPU = checked;
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Always show CPU")
+            checked: Config.options.bar.resources.alwaysShowCpu
+            enabled: Config.options.bar.resources.showCPU
+            onCheckedChanged: {
+                Config.options.bar.resources.alwaysShowCpu = checked;
+            }
+        }
+
+        ConfigSpinBox {
+            enabled: Config.options.bar.resources.showCPU && !Config.options.bar.resources.alwaysShowCpu
+            text: Translation.tr("Show CPU threshhold %")
+            value: Config.options.bar.resources.showCPUThreshhold
+            from: 0
+            to: 100
+            stepSize: 1
+            onValueChanged: {
+                Config.options.bar.resources.showCPUThreshhold = value;
+                console.log(Config.options.bar.resources.showCPUThreshhold);
+            }
+        }
+    }
+
+    ContentSection {
         icon: "shelf_auto_hide"
         title: Translation.tr("Tray")
 
@@ -153,7 +257,7 @@ ContentPage {
                 Config.options.tray.invertPinnedItems = checked;
             }
         }
-        
+
         ConfigSwitch {
             buttonIcon: "colors"
             text: Translation.tr('Tint icons')
@@ -312,7 +416,7 @@ ContentPage {
             ConfigSelectionArray {
                 currentValue: JSON.stringify(Config.options.bar.workspaces.numberMap)
                 onSelected: newValue => {
-                    Config.options.bar.workspaces.numberMap = JSON.parse(newValue)
+                    Config.options.bar.workspaces.numberMap = JSON.parse(newValue);
                 }
                 options: [
                     {

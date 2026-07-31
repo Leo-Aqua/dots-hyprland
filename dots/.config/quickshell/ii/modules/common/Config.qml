@@ -254,9 +254,20 @@ Singleton {
                 property bool verbose: true
                 property bool vertical: false
                 property JsonObject resources: JsonObject {
+                    property bool alwaysShowMemory: true
+                    property double showMemoryThreshhold: 10
+
                     property bool alwaysShowSwap: true
-                    property bool alwaysShowCpu: false
+                    property double showSwapThreshhold: 10
+                    property bool alwaysShowCpu: true
+                    property double showCPUThreshhold: 10
                     property bool alwaysShowGPU: false
+                    property bool memoryInGB: true
+
+                    property bool showCPU: true
+                    property bool showMemory: true
+                    property bool showSwap: true
+
                     property int gpuLayout: 0 // -1: Disable GPU Querries | 0: dGPU | 1: iGPU | 2: Hybrid
 
                     property JsonObject gpu: JsonObject {

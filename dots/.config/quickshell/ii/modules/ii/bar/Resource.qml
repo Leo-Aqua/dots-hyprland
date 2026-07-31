@@ -7,6 +7,7 @@ Item {
     id: root
     required property string iconName
     required property double percentage
+    property var absoluteValue
     property int warningThreshold: 100
     property bool shown: true
     clip: true
@@ -37,7 +38,7 @@ Item {
                 anchors.centerIn: parent
                 width: resourceCircProg.implicitSize
                 height: resourceCircProg.implicitSize
-                
+
                 MaterialSymbol {
                     anchors.centerIn: parent
                     font.weight: Font.DemiBold
@@ -56,7 +57,7 @@ Item {
 
             TextMetrics {
                 id: fullPercentageTextMetrics
-                text: "100"
+                text: absoluteValue === undefined ? "100%" : "100.0 GB"
                 font.pixelSize: Appearance.font.pixelSize.small
             }
 
@@ -65,7 +66,7 @@ Item {
                 anchors.centerIn: parent
                 color: Appearance.colors.colOnLayer1
                 font.pixelSize: Appearance.font.pixelSize.small
-                text: `${Math.round(percentage * 100).toString()}`
+                text: absoluteValue === undefined ? `${Math.round(percentage * 100).toString()}%` : `${absoluteValue.toString()}`
             }
         }
 
