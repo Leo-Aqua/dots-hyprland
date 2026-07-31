@@ -48,7 +48,7 @@ Singleton {
         interval: root.readWriteDelay
         repeat: false
         onTriggered: {
-            configFileView.reload()
+            configFileView.reload();
         }
     }
 
@@ -57,7 +57,7 @@ Singleton {
         interval: root.readWriteDelay
         repeat: false
         onTriggered: {
-            configFileView.writeAdapter()
+            configFileView.writeAdapter();
         }
     }
 
@@ -90,12 +90,16 @@ Singleton {
                 property string tool: "functions" // search, functions, or none
                 property list<var> extraModels: [
                     {
-                        "api_format": "openai", // Most of the time you want "openai". Use "gemini" for Google's models
+                        "api_format": "openai" // Most of the time you want "openai". Use "gemini" for Google's models
+                        ,
                         "description": "This is a custom model. Edit the config to add more! | Anyway, this is DeepSeek R1 Distill LLaMA 70B",
                         "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-                        "homepage": "https://openrouter.ai/deepseek/deepseek-r1-distill-llama-70b:free", // Not mandatory
-                        "icon": "spark-symbolic", // Not mandatory
-                        "key_get_link": "https://openrouter.ai/settings/keys", // Not mandatory
+                        "homepage": "https://openrouter.ai/deepseek/deepseek-r1-distill-llama-70b:free" // Not mandatory
+                        ,
+                        "icon": "spark-symbolic" // Not mandatory
+                        ,
+                        "key_get_link": "https://openrouter.ai/settings/keys" // Not mandatory
+                        ,
                         "key_id": "openrouter",
                         "model": "deepseek/deepseek-r1-distill-llama-70b:free",
                         "name": "Custom: DS R1 Dstl. LLaMA 70B",
@@ -144,7 +148,6 @@ Singleton {
                     property string type: "auto" // Allowed: auto, scheme-content, scheme-expressive, scheme-fidelity, scheme-fruit-salad, scheme-monochrome, scheme-neutral, scheme-rainbow, scheme-tonal-spot
                     property string accentColor: ""
                 }
-
             }
 
             property JsonObject audio: JsonObject {
@@ -165,7 +168,8 @@ Singleton {
                 property string networkEthernet: "kcmshell6 kcm_networkmanagement"
                 property string taskManager: "plasma-systemmonitor --page-name Processes"
                 property string terminal: "kitty -1" // This is only for shell actions
-                property string update: "kitty -1 --hold=yes fish -i -c 'pkexec yay -Syu' && sleep 5 && qs -c ii ipc call updates refresh" // Re scan updates to get rid of Updates button
+                property string update: "kitty -1 --hold=yes fish -i -c 'pkexec yay -Syu' && sleep 5 && qs -c ii ipc call updates refresh"
+                // Re scan updates to get rid of Updates button
                 property string volumeMixer: `~/.config/hypr/hyprland/scripts/launch_first_available.sh "pavucontrol-qt" "pavucontrol"`
             }
 
@@ -253,57 +257,57 @@ Singleton {
                     property bool alwaysShowSwap: true
                     property bool alwaysShowCpu: false
                     property bool alwaysShowGPU: false
-                    property int gpuLayout : -1 // -1: Disable GPU Querries | 0: dGPU | 1: iGPU | 2: Hybrid
+                    property int gpuLayout: 0 // -1: Disable GPU Querries | 0: dGPU | 1: iGPU | 2: Hybrid
 
                     property JsonObject gpu: JsonObject {
-                    // Manual card override (e.g., "card1" for AMD_GPU_CARD/INTEL_GPU_CARD)
-                    property string dgpuCard: ""
-                    property string igpuCard: ""
+                        // Manual card override (e.g., "card1" for AMD_GPU_CARD/INTEL_GPU_CARD)
+                        property string dgpuCard: ""
+                        property string igpuCard: ""
 
-                    // Manual GPU name override (if empty, uses detected name)
-                    property string dgpuName: ""
-                    property string igpuName: ""
+                        // Manual GPU name override (if empty, uses detected name)
+                        property string dgpuName: ""
+                        property string igpuName: ""
 
-                    // Overlay widget GPU display settings
-                    property JsonObject overlay: JsonObject {
-                        property bool showDGpu: true
-                        property bool showIGpu: true
+                        // Overlay widget GPU display settings
+                        property JsonObject overlay: JsonObject {
+                            property bool showDGpu: true
+                            property bool showIGpu: true
 
-                        property JsonObject dGpu: JsonObject {
-                            property bool showUsage: true
-                            property bool showVram: true
-                            property bool showTemp: true
-                            property bool showTempJunction: false  // AMD only
-                            property bool showTempMem: false       // AMD only
-                            property bool showFan: true
-                            property bool showPower: true
+                            property JsonObject dGpu: JsonObject {
+                                property bool showUsage: true
+                                property bool showVram: true
+                                property bool showTemp: true
+                                property bool showTempJunction: false  // AMD only
+                                property bool showTempMem: false       // AMD only
+                                property bool showFan: true
+                                property bool showPower: true
+                            }
+
+                            property JsonObject iGpu: JsonObject {
+                                property bool showUsage: true
+                                property bool showVram: true
+                                property bool showTemp: true
+                            }
                         }
 
-                        property JsonObject iGpu: JsonObject {
-                            property bool showUsage: true
-                            property bool showVram: true
-                            property bool showTemp: true
+                        // Bar popup GPU settings
+                        property JsonObject bar: JsonObject {
+                            property bool showDGpu: true
+                            property bool showIGpu: true
+
+                            property JsonObject dGpu: JsonObject {
+                                property bool showUsage: true
+                                property bool showVram: true
+                                property bool showTemp: true
+                            }
+
+                            property JsonObject iGpu: JsonObject {
+                                property bool showUsage: true
+                                property bool showVram: true
+                                property bool showTemp: true
+                            }
                         }
                     }
-
-                    // Bar popup GPU settings
-                    property JsonObject bar: JsonObject {
-                        property bool showDGpu: true
-                        property bool showIGpu: true
-
-                        property JsonObject dGpu: JsonObject {
-                            property bool showUsage: true
-                            property bool showVram: true
-                            property bool showTemp: true
-                        }
-
-                        property JsonObject iGpu: JsonObject {
-                            property bool showUsage: true
-                            property bool showVram: true
-                            property bool showTemp: true
-                        }
-                    }
-                }
 
                     property int memoryWarningThreshold: 95
                     property int swapWarningThreshold: 85
@@ -422,7 +426,7 @@ Singleton {
             }
 
             property JsonObject launcher: JsonObject {
-                property list<string> pinnedApps: [ "org.kde.dolphin", "kitty", "cmake-gui"]
+                property list<string> pinnedApps: ["org.kde.dolphin", "kitty", "cmake-gui"]
             }
 
             property JsonObject light: JsonObject {
@@ -584,13 +588,11 @@ Singleton {
                 }
             }
 
-
-
             property JsonObject tray: JsonObject {
                 property bool monochromeIcons: true
                 property bool showItemId: false
                 property bool invertPinnedItems: true // Makes the below a whitelist for the tray and blacklist for the pinned area
-                property list<var> pinnedItems: [ "Fcitx" ]
+                property list<var> pinnedItems: ["Fcitx"]
                 property bool filterPassive: true
             }
 
@@ -618,7 +620,7 @@ Singleton {
                     property string imageSearchEngineBaseUrl: "https://lens.google.com/uploadbyurl?url="
                     property bool useCircleSelection: false
                 }
-                 property JsonObject fileSearch: JsonObject {
+                property JsonObject fileSearch: JsonObject {
                     property bool enable: false
                     property list<string> paths: [Directories.home]
                     property list<string> exclude: [".git", "node_modules", "target", "build"]
@@ -661,12 +663,30 @@ Singleton {
                     property JsonObject android: JsonObject {
                         property int columns: 5
                         property list<var> toggles: [
-                            { "size": 2, "type": "network" },
-                            { "size": 2, "type": "bluetooth"  },
-                            { "size": 1, "type": "idleInhibitor" },
-                            { "size": 1, "type": "mic" },
-                            { "size": 2, "type": "audio" },
-                            { "size": 2, "type": "nightLight" }
+                            {
+                                "size": 2,
+                                "type": "network"
+                            },
+                            {
+                                "size": 2,
+                                "type": "bluetooth"
+                            },
+                            {
+                                "size": 1,
+                                "type": "idleInhibitor"
+                            },
+                            {
+                                "size": 1,
+                                "type": "mic"
+                            },
+                            {
+                                "size": 2,
+                                "type": "audio"
+                            },
+                            {
+                                "size": 2,
+                                "type": "nightLight"
+                            }
                         ]
                     }
                 }
@@ -680,7 +700,7 @@ Singleton {
             }
 
             property JsonObject screenRecord: JsonObject {
-                property string savePath: Directories.videos.replace("file://","") // strip "file://"
+                property string savePath: Directories.videos.replace("file://", "") // strip "file://"
             }
 
             property JsonObject screenSnip: JsonObject {
@@ -714,11 +734,11 @@ Singleton {
                 property int adviseUpdateThreshold: 75 // packages
                 property int stronglyAdviseUpdateThreshold: 200 // packages
             }
-            
+
             property JsonObject wallpaperSelector: JsonObject {
                 property bool useSystemFileDialog: false
             }
-            
+
             property JsonObject windows: JsonObject {
                 property bool showTitlebar: true // Client-side decoration for shell apps
                 property bool centerTitle: true
@@ -742,7 +762,7 @@ Singleton {
 
             property JsonObject waffles: JsonObject {
                 // Some spots are kinda janky/awkward. Setting the following to
-                // false will make (some) stuff also be like that for accuracy. 
+                // false will make (some) stuff also be like that for accuracy.
                 // Example: the right-click menu of the Start button
                 property JsonObject tweaks: JsonObject {
                     property bool switchHandlePositionFix: true
@@ -754,7 +774,7 @@ Singleton {
                     property bool leftAlignApps: false
                 }
                 property JsonObject actionCenter: JsonObject {
-                    property list<string> toggles: [ "network", "bluetooth", "easyEffects", "powerProfile", "idleInhibitor", "nightLight", "darkMode", "antiFlashbang", "cloudflareWarp", "mic", "musicRecognition", "notifications", "onScreenKeyboard", "gameMode", "screenSnip", "colorPicker" ]
+                    property list<string> toggles: ["network", "bluetooth", "easyEffects", "powerProfile", "idleInhibitor", "nightLight", "darkMode", "antiFlashbang", "cloudflareWarp", "mic", "musicRecognition", "notifications", "onScreenKeyboard", "gameMode", "screenSnip", "colorPicker"]
                 }
                 property JsonObject calendar: JsonObject {
                     property bool force2CharDayOfWeek: true
