@@ -8,7 +8,9 @@ from subprocess import Popen
 import psutil
 import json
 
-parser = argparse.ArgumentParser(description="Apply color on OpenRGB devices with a smooth transition")
+parser = argparse.ArgumentParser(
+    description="Apply color on OpenRGB devices with a smooth transition"
+)
 parser.add_argument(
     "--duration",
     "-d",
@@ -28,9 +30,9 @@ parser.add_argument(
     "-c",
     type=str,
     help="HEX color to transition to",
-
 )
 args = parser.parse_args()
+
 
 def hexToRGB(hexColor) -> list[int]:
     hexColor = hexColor.removeprefix("#")
@@ -48,17 +50,23 @@ def get_client(name: str = "quickshell") -> OpenRGBClient:
         try:
             return OpenRGBClient(name=name)
         except ConnectionRefusedError:
-            if not is_openrgb_running():
-                Popen(["openrgb", "--server", "--startminimized"])
-            sleep(SERVER_START_RETRY_DELAY)
-    raise RuntimeError(f"Could not connect to OpenRGB after {MAX_SEVER_START_ATTEMPTS} attempts")
+            i = 0
+            Popen(["openrgb", "--server", "--startminimized"])
+            while not is_openrgb_running() and i <= MAX_SEVER_START_ATTEMPTS:
+                sleep(SERVER_START_RETRY_DELAY)
+                i += 1
+        sleep(SERVER_START_RETRY_DELAY)
+
+    raise RuntimeError(
+        f"Could not connect to OpenRGB after {MAX_SEVER_START_ATTEMPTS} attempts"
+    )
 
 
 TRANSITION_DURATION = args.duration
 INTERPOLATION_STEPS = args.interpolation_steps
 
 MAX_SEVER_START_ATTEMPTS = 10
-SERVER_START_RETRY_DELAY = 0.5
+SERVER_START_RETRY_DELAY = 5
 
 xdg_state_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state"))
 xdg_config_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.config"))
@@ -91,7 +99,7 @@ for dev in devices:
                 client.devices[dev["id"]].leds[0].colors[0].red,
                 client.devices[dev["id"]].leds[0].colors[0].green,
                 client.devices[dev["id"]].leds[0].colors[0].blue,
-            ]  
+            ]
 
         dev["interpolation"] = interp1d([0, 1], [old_color, new_color], axis=0)
 
@@ -105,4 +113,4 @@ for i in range(INTERPOLATION_STEPS):
             if client.devices[dev["id"]].active_mode != 0:
                 client.devices[dev["id"]].set_mode(mode=0)
 
-    sleep(TRANSITION_DURATION/INTERPOLATION_STEPS)
+    sleep(TRANSITION_DURATION / INTERPOLATION_STEPS)
