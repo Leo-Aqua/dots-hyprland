@@ -29,17 +29,59 @@ PanelWindow {
 
     // Modes
     // TODO: Ask: sidebar AI
-    enum SnipAction { Copy, Edit, Search, CharRecognition, Record, RecordWithSound } 
-    enum SelectionMode { RectCorners, Circle }
-    enum Phase { Select, Post }
+    enum SnipAction {
+        Copy,
+        Edit,
+        Search,
+        CharRecognition,
+        Record,
+        RecordWithSound
+    }
+    enum SelectionMode {
+        RectCorners,
+        Circle
+    }
+    enum Phase {
+        Select,
+        Post
+    }
     property var action: RegionSelection.SnipAction.Copy
     property var selectionMode: RegionSelection.SelectionMode.RectCorners
     property var phase: RegionSelection.Phase.Select
-    signal dismiss()
+    signal dismiss
 
     // Styles
     property string screenshotDir: Directories.screenshotTemp
     property color overlayColor: ColorUtils.transparentize("#000000", 0.4)
+    property bool cursorHidden: false
+
+    Process {
+        id: hideCursorProcess
+        running: true
+        command: ["bash", "-c", "hyprctl eval 'hl.config({ cursor = { invisible = true } })' && sleep 0.2"]
+        onExited: {
+            if (exitCode === 0) {
+                root.cursorHidden = true;
+                screenshotProc.running = true;
+            }
+        }
+    }
+    Process {
+        id: showCursorProcess
+        running: false
+        command: ["bash", "-c", "hyprctl eval 'hl.config({ cursor = { invisible = false } })'"]
+    }
+    Component.onDestruction: {
+        if (root.cursorHidden && !root.isRecording) {
+            showCursorProcess.running = true;
+        }
+    }
+    onIsRecordingChanged: {
+        if (root.isRecording) {
+            hideCursorProcess.running = false;
+            showCursorProcess.running = true;
+        }
+    }
     property color brightText: Appearance.m3colors.darkmode ? Appearance.colors.colOnLayer0 : Appearance.colors.colLayer0
     property color brightSecondary: Appearance.m3colors.darkmode ? Appearance.colors.colSecondary : Appearance.colors.colOnSecondary
     property color brightTertiary: Appearance.m3colors.darkmode ? Appearance.colors.colTertiary : Qt.lighter(Appearance.colors.colPrimary)
@@ -56,7 +98,8 @@ PanelWindow {
     // Vars for indicators
     readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
         // Sort floating=true windows before others
-        if (a.floating === b.floating) return 0;
+        if (a.floating === b.floating)
+            return 0;
         return a.floating ? -1 : 1;
     })
     readonly property var layers: HyprlandData.layers
@@ -80,36 +123,32 @@ PanelWindow {
     property list<point> points: []
     property var mouseButton: null
     property var imageRegions: []
-    readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
-        root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
-        root.layerRegions
-    ).map(window => {
+    readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(root.windows.filter(w => w.workspace.id === root.activeWorkspaceId), root.layerRegions).map(window => {
         return {
             at: [window.at[0] - root.monitorOffsetX, window.at[1] - root.monitorOffsetY],
             size: [window.size[0], window.size[1]],
             class: window.class,
-            title: window.title,
-        }
+            title: window.title
+        };
     })
     readonly property list<var> layerRegions: {
-        const layersOfThisMonitor = root.layers[root.hyprlandMonitor.name]
-        const topLayers = layersOfThisMonitor?.levels["2"]
-        if (!topLayers) return [];
-        const nonBarTopLayers = topLayers
-            .filter(layer => !(layer.namespace.includes(":bar") || layer.namespace.includes(":verticalBar") || layer.namespace.includes(":dock")))
-            .map(layer => {
+        const layersOfThisMonitor = root.layers[root.hyprlandMonitor.name];
+        const topLayers = layersOfThisMonitor?.levels["2"];
+        if (!topLayers)
+            return [];
+        const nonBarTopLayers = topLayers.filter(layer => !(layer.namespace.includes(":bar") || layer.namespace.includes(":verticalBar") || layer.namespace.includes(":dock"))).map(layer => {
             return {
                 at: [layer.x, layer.y],
                 size: [layer.w, layer.h],
-                namespace: layer.namespace,
-            }
-        })
+                namespace: layer.namespace
+            };
+        });
         const offsetAdjustedLayers = nonBarTopLayers.map(layer => {
             return {
                 at: [layer.at[0] - root.monitorOffsetX, layer.at[1] - root.monitorOffsetY],
                 size: layer.size,
-                namespace: layer.namespace,
-            }
+                namespace: layer.namespace
+            };
         });
         return offsetAdjustedLayers;
     }
@@ -126,7 +165,7 @@ PanelWindow {
     property real targetedRegionWidth: 0
     property real targetedRegionHeight: 0
     function targetedRegionValid() {
-        return (root.targetedRegionX >= 0 && root.targetedRegionY >= 0)
+        return (root.targetedRegionX >= 0 && root.targetedRegionY >= 0);
     }
     function setRegionToTargeted() {
         const padding = Config.options.regionSelector.targetRegions.selectionPadding; // Make borders not cut off n stuff
@@ -187,12 +226,17 @@ PanelWindow {
     // Screenshot stuff
     TempScreenshotProcess {
         id: screenshotProc
-        running: true
+        running: false
         screen: root.screen
         screenshotDir: root.screenshotDir
         screenshotPath: root.screenshotPath
         onExited: (exitCode, exitStatus) => {
-            if (root.enableContentRegions) imageDetectionProcess.running = true;
+            if (!root.isRecording) {
+                root.cursorHidden = false;
+                showCursorProcess.running = true;
+            }
+            if (root.enableContentRegions)
+                imageDetectionProcess.running = true;
             root.preparationDone = !checkRecordingProc.running;
         }
     }
@@ -203,13 +247,14 @@ PanelWindow {
         running: isRecording
         command: ["pidof", "wf-recorder"]
         onExited: (exitCode, exitStatus) => {
-            root.preparationDone = !screenshotProc.running
+            root.preparationDone = !screenshotProc.running;
             root.recordingShouldStop = (exitCode === 0);
         }
     }
     property bool preparationDone: false
     onPreparationDoneChanged: {
-        if (!preparationDone) return;
+        if (!preparationDone)
+            return;
         if (root.isRecording && root.recordingShouldStop) {
             Quickshell.execDetached([Directories.recordScriptPath]);
             root.dismiss();
@@ -220,40 +265,33 @@ PanelWindow {
 
     Process {
         id: imageDetectionProcess
-        command: ["bash", "-c", `${Directories.scriptPath}/images/find-regions-venv.sh ` 
-            + `--hyprctl ` 
-            + `--image '${StringUtils.shellSingleQuoteEscape(root.screenshotPath)}' ` 
-            + `--max-width ${Math.round(root.screen.width * root.falsePositivePreventionRatio)} ` 
-            + `--max-height ${Math.round(root.screen.height * root.falsePositivePreventionRatio)} `]
+        command: ["bash", "-c", `${Directories.scriptPath}/images/find-regions-venv.sh ` + `--hyprctl ` + `--image '${StringUtils.shellSingleQuoteEscape(root.screenshotPath)}' ` + `--max-width ${Math.round(root.screen.width * root.falsePositivePreventionRatio)} ` + `--max-height ${Math.round(root.screen.height * root.falsePositivePreventionRatio)} `]
         stdout: StdioCollector {
             id: imageDimensionCollector
             onStreamFinished: {
-                imageRegions = RegionFunctions.filterImageRegions(
-                    JSON.parse(imageDimensionCollector.text),
-                    root.windowRegions
-                );
+                imageRegions = RegionFunctions.filterImageRegions(JSON.parse(imageDimensionCollector.text), root.windowRegions);
             }
         }
     }
 
     function getScreenshotAction() {
-        switch(root.action) {
-            case RegionSelection.SnipAction.Copy:
-                return ScreenshotAction.Action.Copy;
-            case RegionSelection.SnipAction.Edit:
-                return ScreenshotAction.Action.Edit;
-            case RegionSelection.SnipAction.Search:
-                return ScreenshotAction.Action.Search;
-            case RegionSelection.SnipAction.CharRecognition:
-                return ScreenshotAction.Action.CharRecognition;
-            case RegionSelection.SnipAction.Record:
-                return ScreenshotAction.Action.Record;
-            case RegionSelection.SnipAction.RecordWithSound:
-                return ScreenshotAction.Action.RecordWithSound;
-            default:
-                console.warn("[Region Selector] Unknown snip action, skipping snip.");
-                root.dismiss();
-                return;
+        switch (root.action) {
+        case RegionSelection.SnipAction.Copy:
+            return ScreenshotAction.Action.Copy;
+        case RegionSelection.SnipAction.Edit:
+            return ScreenshotAction.Action.Edit;
+        case RegionSelection.SnipAction.Search:
+            return ScreenshotAction.Action.Search;
+        case RegionSelection.SnipAction.CharRecognition:
+            return ScreenshotAction.Action.CharRecognition;
+        case RegionSelection.SnipAction.Record:
+            return ScreenshotAction.Action.Record;
+        case RegionSelection.SnipAction.RecordWithSound:
+            return ScreenshotAction.Action.RecordWithSound;
+        default:
+            console.warn("[Region Selector] Unknown snip action, skipping snip.");
+            root.dismiss();
+            return;
         }
     }
 
@@ -275,23 +313,21 @@ PanelWindow {
         if (root.action === RegionSelection.SnipAction.Copy || root.action === RegionSelection.SnipAction.Edit) {
             root.action = root.mouseButton === Qt.RightButton ? RegionSelection.SnipAction.Edit : RegionSelection.SnipAction.Copy;
         }
-        
+
         const screenshotDir = Config.options.screenSnip.savePath !== "" ? //
-            Config.options.screenSnip.savePath : "";
+        Config.options.screenSnip.savePath : "";
         var screenshotAction = root.getScreenshotAction();
-        const command = ScreenshotAction.getCommand(
-            root.regionX * root.monitorScale, //
-            root.regionY * root.monitorScale, //
-            root.regionWidth * root.monitorScale,// 
-            root.regionHeight * root.monitorScale, //
-            root.screenshotPath, //
-            screenshotAction, //
-            screenshotDir
-        )
+        const command = ScreenshotAction.getCommand(root.regionX * root.monitorScale //
+        , root.regionY * root.monitorScale //
+        , root.regionWidth * root.monitorScale//
+        , root.regionHeight * root.monitorScale //
+        , root.screenshotPath //
+        , screenshotAction //
+        , screenshotDir);
         Quickshell.execDetached(command);
         if (root.action == RegionSelection.SnipAction.Record || root.action == RegionSelection.SnipAction.RecordWithSound) {
-            root.phase = RegionSelection.Phase.Post
-            root.selectionMode = RegionSelection.SelectionMode.RectCorners
+            root.phase = RegionSelection.Phase.Post;
+            root.selectionMode = RegionSelection.SelectionMode.RectCorners;
         } else {
             root.dismiss();
         }
@@ -299,9 +335,11 @@ PanelWindow {
 
     // Only clickable in Selection phase
     mask: Region {
-        item: switch(root.phase) {
-            case RegionSelection.Phase.Select: return mouseArea;
-            case RegionSelection.Phase.Post: return null;
+        item: switch (root.phase) {
+        case RegionSelection.Phase.Select:
+            return mouseArea;
+        case RegionSelection.Phase.Post:
+            return null;
         }
     }
 
@@ -312,7 +350,7 @@ PanelWindow {
         visible: root.phase === RegionSelection.Phase.Select
 
         focus: root.visible
-        Keys.onPressed: (event) => { // Esc to close
+        Keys.onPressed: event => { // Esc to close
             if (event.key === Qt.Key_Escape) {
                 root.dismiss();
             }
@@ -327,7 +365,7 @@ PanelWindow {
         hoverEnabled: true
 
         // Controls
-        onPressed: (mouse) => {
+        onPressed: mouse => {
             root.dragStartX = mouse.x;
             root.dragStartY = mouse.y;
             root.draggingX = mouse.x;
@@ -335,17 +373,22 @@ PanelWindow {
             root.dragging = true;
             root.mouseButton = mouse.button;
         }
-        onReleased: (mouse) => {
+        onReleased: mouse => {
             // Detect if it was a click -> Try to select targeted region
             if (root.draggingX === root.dragStartX && root.draggingY === root.dragStartY) {
                 if (root.targetedRegionValid()) {
                     root.setRegionToTargeted();
                 }
-            }
+            } else
             // Circle dragging?
-            else if (root.selectionMode === RegionSelection.SelectionMode.Circle) {
+            if (root.selectionMode === RegionSelection.SelectionMode.Circle) {
                 const padding = Config.options.regionSelector.circle.padding + Config.options.regionSelector.circle.strokeWidth / 2;
-                const dragPoints = (root.points.length > 0) ? root.points : [{ x: mouseArea.mouseX, y: mouseArea.mouseY }];
+                const dragPoints = (root.points.length > 0) ? root.points : [
+                    {
+                        x: mouseArea.mouseX,
+                        y: mouseArea.mouseY
+                    }
+                ];
                 const maxX = Math.max(...dragPoints.map(p => p.x));
                 const minX = Math.min(...dragPoints.map(p => p.x));
                 const maxY = Math.max(...dragPoints.map(p => p.y));
@@ -357,16 +400,20 @@ PanelWindow {
             }
             root.snip();
         }
-        onPositionChanged: (mouse) => {
+        onPositionChanged: mouse => {
             root.updateTargetedRegion(mouse.x, mouse.y);
-            if (!root.dragging) return;
+            if (!root.dragging)
+                return;
             root.draggingX = mouse.x;
             root.draggingY = mouse.y;
             root.dragDiffX = mouse.x - root.dragStartX;
             root.dragDiffY = mouse.y - root.dragStartY;
-            root.points.push({ x: mouse.x, y: mouse.y });
+            root.points.push({
+                x: mouse.x,
+                y: mouse.y
+            });
         }
-        
+
         Loader {
             z: 2
             anchors.fill: parent
@@ -410,9 +457,9 @@ PanelWindow {
             model: ScriptModel {
                 values: {
                     if (root.phase === RegionSelection.Phase.Select && root.enableWindowRegions) {
-                        return root.windowRegions
+                        return root.windowRegions;
                     } else {
-                        return []
+                        return [];
                     }
                 }
             }
@@ -422,7 +469,7 @@ PanelWindow {
                 clientDimensions: modelData
                 showIcon: true
                 targeted: !root.draggedAway && //
-                    (root.targetedRegionX === modelData.at[0]  //
+                (root.targetedRegionX === modelData.at[0]  //
                     && root.targetedRegionY === modelData.at[1] //
                     && root.targetedRegionWidth === modelData.size[0] //
                     && root.targetedRegionHeight === modelData.size[1])
@@ -440,9 +487,9 @@ PanelWindow {
             model: ScriptModel {
                 values: {
                     if (root.phase === RegionSelection.Phase.Select && root.enableLayerRegions) {
-                        return root.layerRegions
+                        return root.layerRegions;
                     } else {
-                        return []
+                        return [];
                     }
                 }
             }
@@ -450,11 +497,7 @@ PanelWindow {
                 z: 3
                 required property var modelData
                 clientDimensions: modelData
-                targeted: !root.draggedAway &&
-                    (root.targetedRegionX === modelData.at[0] 
-                    && root.targetedRegionY === modelData.at[1]
-                    && root.targetedRegionWidth === modelData.size[0]
-                    && root.targetedRegionHeight === modelData.size[1])
+                targeted: !root.draggedAway && (root.targetedRegionX === modelData.at[0] && root.targetedRegionY === modelData.at[1] && root.targetedRegionWidth === modelData.size[0] && root.targetedRegionHeight === modelData.size[1])
 
                 opacity: root.draggedAway ? 0 : root.targetRegionOpacity
                 borderColor: root.windowBorderColor
@@ -469,9 +512,9 @@ PanelWindow {
             model: ScriptModel {
                 values: {
                     if (root.phase === RegionSelection.Phase.Select && root.enableContentRegions) {
-                        return root.imageRegions
+                        return root.imageRegions;
                     } else {
-                        return []
+                        return [];
                     }
                 }
             }
@@ -479,11 +522,7 @@ PanelWindow {
                 z: 4
                 required property var modelData
                 clientDimensions: modelData
-                targeted: !root.draggedAway &&
-                    (root.targetedRegionX === modelData.at[0] 
-                    && root.targetedRegionY === modelData.at[1]
-                    && root.targetedRegionWidth === modelData.size[0]
-                    && root.targetedRegionHeight === modelData.size[1])
+                targeted: !root.draggedAway && (root.targetedRegionX === modelData.at[0] && root.targetedRegionY === modelData.at[1] && root.targetedRegionWidth === modelData.size[0] && root.targetedRegionHeight === modelData.size[1])
 
                 opacity: root.draggedAway ? 0 : root.contentRegionOpacity
                 borderColor: root.imageBorderColor
@@ -506,7 +545,8 @@ PanelWindow {
             Connections {
                 target: root
                 function onVisibleChanged() {
-                    if (!visible) return;
+                    if (!visible)
+                        return;
                     regionSelectionControls.anchors.bottomMargin = 8;
                     regionSelectionControls.opacity = 1;
                 }
@@ -526,17 +566,16 @@ PanelWindow {
                 Synchronizer on selectionMode {
                     property alias source: root.selectionMode
                 }
-                onDismiss: root.dismiss();
+                onDismiss: root.dismiss()
             }
             ToolbarPairedFab {
                 anchors.verticalCenter: parent.verticalCenter
                 iconText: "close"
-                onClicked: root.dismiss();
+                onClicked: root.dismiss()
                 StyledToolTip {
                     text: Translation.tr("Close")
                 }
             }
         }
-        
     }
 }
