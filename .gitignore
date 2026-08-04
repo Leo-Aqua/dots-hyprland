@@ -92,4 +92,6 @@ dots/.config/hypr/hyprlock/colors.lua
 *.tbcache
 
 # VScode
-.vscode
+.vscode# pixi environments
+.pixi/*
+!.pixi/config.toml
