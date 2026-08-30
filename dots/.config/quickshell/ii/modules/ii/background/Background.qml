@@ -5,6 +5,7 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.widgets.widgetCanvas
+import qs.modules.common.models
 import qs.modules.common.functions as CF
 import QtQuick
 import QtQuick.Layouts
@@ -69,6 +70,65 @@ Variants {
         // Colors
         property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
         property color dominantColor: Appearance.colors.colPrimary // Default, to be changed
+        // MPRIS Artwork & Color Quantization
+        property var activeArtUrl: activePlayer?.trackArtUrl
+        property string artDownloadLocation: Directories.coverArt
+        property string artFileName: Qt.md5(activeArtUrl ?? "")
+        property string artFilePath: `${artDownloadLocation}/${artFileName}`
+        property bool artDownloaded: false
+        property string displayedArtFilePath: bgRoot.artDownloaded ? Qt.resolvedUrl(bgRoot.artFilePath) : ""
+
+        onArtFilePathChanged: {
+            if (!activeArtUrl || activeArtUrl.length === 0) {
+                bgRoot.artDownloaded = false;
+                bgRoot.artDominantColor = Appearance.m3colors.m3secondaryContainer;
+                return;
+            }
+
+            // Clear artDownloaded first so displayedArtFilePath momentarily empties
+            bgRoot.artDownloaded = false;
+            coverArtDownloader.targetFile = activeArtUrl;
+            coverArtDownloader.artFilePath = artFilePath;
+            coverArtDownloader.running = true;
+        }
+
+        Process {
+            id: coverArtDownloader
+            property string targetFile: ""
+            property string artFilePath: ""
+            command: ["bash", "-c", "file=\"$1\"; url=\"$2\"; [ -f \"$file\" ] || curl -4 -sSL \"$url\" -o \"$file\"", "--", artFilePath, targetFile]
+            onExited: (exitCode, exitStatus) => {
+                if (exitCode === 0) {
+                    bgRoot.artDownloaded = true;
+                }
+            }
+        }
+
+        Connections {
+            target: bgRoot.activePlayer ?? null
+            enabled: bgRoot.activePlayer !== null
+
+            function onIsPlayingChanged() {
+                if (bgRoot.activePlayer.isPlaying) {
+                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --color "${bgRoot.artDominantColor}" --noswitch`]);
+                } else {
+                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --color clear --noswitch`]);
+                }
+            }
+        }
+        ColorQuantizer {
+            id: colorQuantizer
+            source: bgRoot.displayedArtFilePath
+            depth: 0
+            rescaleSize: 1
+        }
+
+        property color artDominantColor: CF.ColorUtils.mix((colorQuantizer.colors && colorQuantizer.colors.length > 0 ? colorQuantizer.colors[0] : Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
+
+        property QtObject blendedColors: AdaptedMaterialScheme {
+            color: bgRoot.artDominantColor
+        }
+
         property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
         property color colText: {
             if (wallpaperSafetyTriggered)
@@ -225,14 +285,14 @@ Variants {
                         // Center the picture
                         return (bgRoot.screen.width - width) / 2;
                     }
-                    return - bgRoot.parallaxTotalPixelsX * usedFractionX;
+                    return -bgRoot.parallaxTotalPixelsX * usedFractionX;
                 }
                 y: {
                     if (bgRoot.screen.height > height) {
                         // Center the picture
                         return (bgRoot.screen.height - height) / 2;
                     }
-                    return - bgRoot.parallaxTotalPixelsY * usedFractionY;
+                    return -bgRoot.parallaxTotalPixelsY * usedFractionY;
                 }
 
                 source: bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
@@ -277,6 +337,102 @@ Variants {
                         color: CF.ColorUtils.transparentize(Appearance.colors.colLayer0, 0.7)
                     }
                 }
+            }
+
+            Item {
+                id: maskSource
+                anchors.fill: parent
+                visible: false // Used purely as a texture input for OpacityMask
+
+                Rectangle {
+                    id: maskCircle
+                    anchors.centerIn: parent
+
+                    // Maximum radius required to cover screen corners when expanded
+                    readonly property real maxRadius: Math.hypot(bgRoot.width / 2, bgRoot.height / 2)
+
+                    width: radius * 2
+                    height: radius * 2
+                    radius: (bgRoot.activePlayer && bgRoot.activePlayer.isPlaying) ? maxRadius : 0
+
+                    // Smooth expand / shrink animation
+                    Behavior on radius {
+                        NumberAnimation {
+                            duration: 500
+                            easing.type: Easing.InOutCubic
+                        }
+                    }
+                }
+            }
+
+            Item {
+                id: musicWallpaperContent
+                anchors.fill: parent
+                visible: false // Rendered exclusively through maskSource below
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: bgRoot.blendedColors.colSecondaryContainerActive
+                }
+
+                SineCookie {
+
+                    anchors.centerIn: parent
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height)
+                    color: blendedColors.colSecondaryContainer
+                    constantlyRotate: true
+                    rotationSpeed: 0.01
+                    sides: 15
+                }
+
+                SineCookie {
+
+                    anchors.centerIn: parent
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 2
+                    color: blendedColors.colOnPrimary
+                    constantlyRotate: true
+                    rotationSpeed: -0.05
+                    sides: 7
+                }
+
+                StyledImage {
+                    id: musicArtImage
+                    visible: false // Keep hidden so only the masked output renders
+                    anchors.centerIn: parent
+
+                    source: bgRoot.displayedArtFilePath
+                    fillMode: Image.PreserveAspectCrop
+                    cache: false
+                    antialiasing: true
+
+                    height: bgRoot.scaledWallpaperHeight / 3
+                    width: height
+                }
+
+                SineCookie {
+                    id: musicArtImageMask
+                    visible: false // Keep hidden so it only acts as an alpha texture
+                    anchors.centerIn: parent
+                    implicitSize: musicArtImage.implicitHeight
+
+                    constantlyRotate: true
+                    rotationSpeed: 0.1
+                    sides: 5
+                    opacity: 0.5
+                }
+
+                OpacityMask {
+                    anchors.fill: musicArtImage
+                    source: musicArtImage
+                    maskSource: musicArtImageMask
+                }
+            }
+
+            OpacityMask {
+                anchors.fill: parent
+                source: musicWallpaperContent
+                maskSource: maskSource
+                visible: maskCircle.radius > 0
             }
 
             WidgetCanvas {
@@ -331,34 +487,35 @@ Variants {
                         wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
                     }
                 }
-                
-                
-                
-                
             }
             // Still hard coded enabled for now
-                // TODO: Add config entry and Settings switch to toggle/configure visualizer
-                Repeater {
-                    model: ScriptModel { values: bgRoot.meaningfulPlayers }
-                    delegate: WaveVisualizer {
-                        required property MprisPlayer modelData
-                        
-                        // Anchor to the sides, but handle vertical positioning with 'y'
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        height: bgRoot.screen.height * 0.3
-                        
+            // TODO: Add config entry and Settings switch to toggle/configure visualizer
+            Repeater {
+                model: ScriptModel {
+                    values: bgRoot.meaningfulPlayers
+                }
+                delegate: WaveVisualizer {
+                    required property MprisPlayer modelData
 
-                        live: bgRoot.visible && modelData.playbackStatus === MprisPlaybackStatus.Playing
-                        points: bgRoot.visualizerPoints
-                        maxVisualizerValue: bgRoot.maxVisualizerValue
-                        smoothing: bgRoot.visualizerSmoothing
-                        
-                        transparency: 0.4
-                        Behavior on opacity { NumberAnimation { duration: 500 } }
+                    // Anchor to the sides, but handle vertical positioning with 'y'
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: bgRoot.screen.height * 0.3
+
+                    live: bgRoot.visible && (bgRoot.activePlayer?.isPlaying ?? false)
+                    points: bgRoot.visualizerPoints
+                    maxVisualizerValue: bgRoot.maxVisualizerValue
+                    smoothing: bgRoot.visualizerSmoothing
+
+                    transparency: 0.4
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 500
+                        }
                     }
                 }
+            }
         }
     }
 }
