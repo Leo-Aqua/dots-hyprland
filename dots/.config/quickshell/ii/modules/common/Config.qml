@@ -303,8 +303,8 @@ Singleton {
 
                         // Bar popup GPU settings
                         property JsonObject bar: JsonObject {
-                            property bool showDGpu: true
-                            property bool showIGpu: true
+                            property bool showDGpu: false
+                            property bool showIGpu: false
 
                             property JsonObject dGpu: JsonObject {
                                 property bool showUsage: true
