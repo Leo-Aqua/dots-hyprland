@@ -439,7 +439,7 @@ Variants {
                     cache: false
                     antialiasing: true
 
-                    height: bgRoot.scaledWallpaperHeight / 3 + bgRoot.currentVolume / 10
+                    height: bgRoot.scaledWallpaperHeight / 3
                     width: height
                 }
 
@@ -447,7 +447,7 @@ Variants {
                     id: musicArtImageMask
                     visible: false // Keep hidden so it only acts as an alpha texture
                     anchors.centerIn: parent
-                    implicitSize: musicArtImage.implicitHeight + bgRoot.currentVolume / 10
+                    implicitSize: musicArtImage.implicitHeight
 
                     constantlyRotate: true
                     rotationSpeed: 0.1
