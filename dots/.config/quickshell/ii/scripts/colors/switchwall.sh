@@ -64,7 +64,7 @@ check_and_prompt_upscale() {
     min_width_desired="$(hyprctl monitors -j | jq '([.[].width] | max)' | xargs)" # max monitor width
     min_height_desired="$(hyprctl monitors -j | jq '([.[].height] | max)' | xargs)" # max monitor height
 
-    if command -v identify &>/dev/null && [ -f "$img" ]; then
+    if command -v identify &>/dev/null && [ -f "$img" ] && [[ -z "$noswitch_flag" ]]; then
         local img_width img_height
         if is_video "$img"; then # Not check resolution for videos, just let em pass
             img_width=$min_width_desired
@@ -254,8 +254,10 @@ switch() {
             matugen_args+=(image "$imgpath")
             generate_colors_material_args=(--path "$imgpath")
             # Update wallpaper path in config
-            set_wallpaper_path "$imgpath"
-            remove_restore
+            if [[ -z "$noswitch_flag" ]]; then
+                set_wallpaper_path "$imgpath"
+                remove_restore
+            fi
         fi
     fi
 
@@ -364,14 +366,16 @@ main() {
                     shift
                 fi
                 ;;
+            --noswitch)
+                noswitch_flag="1"
+                if [[ -z "$imgpath" ]]; then
+                    imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                fi
+                shift
+                ;;
             --image)
                 imgpath="$2"
                 shift 2
-                ;;
-            --noswitch)
-                noswitch_flag="1"
-                imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
-                shift
                 ;;
             *)
                 if [[ -z "$imgpath" ]]; then
@@ -414,7 +418,7 @@ main() {
         imgpath="$(kdialog --getopenfilename . --title 'Choose wallpaper')"
     fi
 
-    if [[ -n "$imgpath" && -z "$noswitch_flag" ]]; then
+    if [[ -n "$imgpath" ]]; then
         set_accent_color ""
         color_flag=""
         color=""

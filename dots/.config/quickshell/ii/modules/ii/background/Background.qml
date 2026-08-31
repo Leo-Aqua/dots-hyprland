@@ -36,6 +36,8 @@ Variants {
         readonly property var meaningfulPlayers: filterDuplicatePlayers(realPlayers)
         property list<real> visualizerPoints: []
 
+        property int currentVolume: 0
+
         // Hide when fullscreen
         property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
         property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
@@ -70,37 +72,61 @@ Variants {
         // Colors
         property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
         property color dominantColor: Appearance.colors.colPrimary // Default, to be changed
+
         // MPRIS Artwork & Color Quantization
-        property var activeArtUrl: activePlayer?.trackArtUrl
+        property var activeArtUrl: bgRoot.activePlayer?.trackArtUrl ?? ""
         property string artDownloadLocation: Directories.coverArt
-        property string artFileName: Qt.md5(activeArtUrl ?? "")
-        property string artFilePath: `${artDownloadLocation}/${artFileName}`
+        property string artFileName: bgRoot.activeArtUrl ? Qt.md5(bgRoot.activeArtUrl) : ""
+        property string artFilePath: bgRoot.artFileName ? `${bgRoot.artDownloadLocation}/${bgRoot.artFileName}` : ""
+
         property bool artDownloaded: false
+        // Use Qt.resolvedUrl exactly like playerController
         property string displayedArtFilePath: bgRoot.artDownloaded ? Qt.resolvedUrl(bgRoot.artFilePath) : ""
 
+        // Exact color binding from playerController
+        property color artDominantColor: CF.ColorUtils.mix((colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
+
         onArtFilePathChanged: {
-            if (!activeArtUrl || activeArtUrl.length === 0) {
-                bgRoot.artDownloaded = false;
+            if (bgRoot.activeArtUrl.length === 0) {
                 bgRoot.artDominantColor = Appearance.m3colors.m3secondaryContainer;
                 return;
             }
 
-            // Clear artDownloaded first so displayedArtFilePath momentarily empties
+            // Binding does not work in Process, assign manually
+            coverArtDownloader.targetFile = bgRoot.activeArtUrl;
+            coverArtDownloader.targetPath = bgRoot.artFilePath;
+
+            // Trigger download
             bgRoot.artDownloaded = false;
-            coverArtDownloader.targetFile = activeArtUrl;
-            coverArtDownloader.artFilePath = artFilePath;
             coverArtDownloader.running = true;
         }
 
-        Process {
+        Process { // Cover art downloader
             id: coverArtDownloader
             property string targetFile: ""
-            property string artFilePath: ""
-            command: ["bash", "-c", "file=\"$1\"; url=\"$2\"; [ -f \"$file\" ] || curl -4 -sSL \"$url\" -o \"$file\"", "--", artFilePath, targetFile]
+            property string targetPath: ""
+
+            command: ["bash", "-c", `[ -f "${targetPath}" ] || curl -4 -sSL '${targetFile}' -o '${targetPath}'`]
             onExited: (exitCode, exitStatus) => {
-                if (exitCode === 0) {
-                    bgRoot.artDownloaded = true;
-                }
+                bgRoot.artDownloaded = true;
+            }
+        }
+
+        ColorQuantizer {
+            id: colorQuantizer
+            source: bgRoot.displayedArtFilePath
+            depth: 0
+            rescaleSize: 1
+        }
+
+        property QtObject blendedColors: AdaptedMaterialScheme {
+            color: bgRoot.artDominantColor
+        }
+
+        // Execute the script safely only when the color has updated and the image is ready
+        onArtDominantColorChanged: {
+            if (bgRoot.artDownloaded && bgRoot.activePlayer && bgRoot.activePlayer.isPlaying) {
+                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
             }
         }
 
@@ -110,23 +136,14 @@ Variants {
 
             function onIsPlayingChanged() {
                 if (bgRoot.activePlayer.isPlaying) {
-                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --color "${bgRoot.artDominantColor}" --noswitch`]);
+                    // Prevent running the script until the artwork is successfully downloaded.
+                    if (bgRoot.artDownloaded && bgRoot.artFilePath.length > 0) {
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
+                    }
                 } else {
-                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --color clear --noswitch`]);
+                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
                 }
             }
-        }
-        ColorQuantizer {
-            id: colorQuantizer
-            source: bgRoot.displayedArtFilePath
-            depth: 0
-            rescaleSize: 1
-        }
-
-        property color artDominantColor: CF.ColorUtils.mix((colorQuantizer.colors && colorQuantizer.colors.length > 0 ? colorQuantizer.colors[0] : Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
-
-        property QtObject blendedColors: AdaptedMaterialScheme {
-            color: bgRoot.artDominantColor
         }
 
         property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
@@ -170,7 +187,7 @@ Variants {
 
         Process {
             id: cavaProc
-            running: bgRoot.visible
+            running: bgRoot.activePlayer.isPlaying
             onRunningChanged: {
                 if (!cavaProc.running) {
                     bgRoot.visualizerPoints = [];
@@ -182,6 +199,23 @@ Variants {
                     // Parse `;`-separated values into the visualizerPoints array
                     let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
                     bgRoot.visualizerPoints = points;
+                }
+            }
+        }
+
+        Process {
+            id: cavaVUProc
+            running: bgRoot.activePlayer.isPlaying
+            onRunningChanged: {
+                if (!cavaVUProc.running) {
+                    bgRoot.currentVolume = 0;
+                }
+            }
+            command: ["cava", "-p", `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config_for_vu_meter.txt`]
+            stdout: SplitParser {
+                onRead: data => {
+                    bgRoot.currentVolume = parseFloat(data.replace(";", ""));
+
                 }
             }
         }
@@ -378,9 +412,9 @@ Variants {
                 SineCookie {
 
                     anchors.centerIn: parent
-                    implicitSize: Math.max(bgRoot.width, bgRoot.height)
-                    color: blendedColors.colSecondaryContainer
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 1.1 + bgRoot.currentVolume / 10
                     constantlyRotate: true
+                    color: blendedColors.colOnSecondaryContainer
                     rotationSpeed: 0.01
                     sides: 15
                 }
@@ -388,7 +422,7 @@ Variants {
                 SineCookie {
 
                     anchors.centerIn: parent
-                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 2
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 2 - bgRoot.currentVolume / 10
                     color: blendedColors.colOnPrimary
                     constantlyRotate: true
                     rotationSpeed: -0.05
@@ -405,7 +439,7 @@ Variants {
                     cache: false
                     antialiasing: true
 
-                    height: bgRoot.scaledWallpaperHeight / 3
+                    height: bgRoot.scaledWallpaperHeight / 3 + bgRoot.currentVolume / 10
                     width: height
                 }
 
@@ -413,7 +447,7 @@ Variants {
                     id: musicArtImageMask
                     visible: false // Keep hidden so it only acts as an alpha texture
                     anchors.centerIn: parent
-                    implicitSize: musicArtImage.implicitHeight
+                    implicitSize: musicArtImage.implicitHeight + bgRoot.currentVolume / 10
 
                     constantlyRotate: true
                     rotationSpeed: 0.1
@@ -432,68 +466,12 @@ Variants {
                 anchors.fill: parent
                 source: musicWallpaperContent
                 maskSource: maskSource
-                visible: maskCircle.radius > 0
             }
 
-            WidgetCanvas {
-                id: widgetCanvas
-                width: parent.width
-                height: parent.height
-                readonly property real parallaxFactor: {
-                    var f = Config.options.background.parallax.widgetsFactor;
-                    return f / bgRoot.parallaxRation;
-                }
-                readonly property real baseWallpaperOffsetX: (bgRoot.screen.width - wallpaper.width) / 2
-                readonly property real baseWallpaperOffsetY: (bgRoot.screen.height - wallpaper.height) / 2
-                readonly property real wallpaperTotalOffsetX: wallpaper.x - baseWallpaperOffsetX
-                readonly property real wallpaperTotalOffsetY: wallpaper.y - baseWallpaperOffsetY
-                readonly property bool locked: GlobalStates.screenLocked
-                x: wallpaperTotalOffsetX * parallaxFactor * !locked
-                y: wallpaperTotalOffsetY * parallaxFactor * !locked
-
-                transitions: Transition {
-                    PropertyAnimation {
-                        properties: "width,height"
-                        duration: Appearance.animation.elementMove.duration
-                        easing.type: Appearance.animation.elementMove.type
-                        easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
-                    }
-                    AnchorAnimation {
-                        duration: Appearance.animation.elementMove.duration
-                        easing.type: Appearance.animation.elementMove.type
-                        easing.bezierCurve: Appearance.animation.elementMove.bezierCurve
-                    }
-                }
-
-                FadeLoader {
-                    shown: Config.options.background.widgets.weather.enable
-                    sourceComponent: WeatherWidget {
-                        screenWidth: bgRoot.screen.width
-                        screenHeight: bgRoot.screen.height
-                        scaledScreenWidth: bgRoot.screen.width
-                        scaledScreenHeight: bgRoot.screen.height
-                        wallpaperScale: 1
-                    }
-                }
-
-                FadeLoader {
-                    shown: Config.options.background.widgets.clock.enable
-                    sourceComponent: ClockWidget {
-                        screenWidth: bgRoot.screen.width
-                        screenHeight: bgRoot.screen.height
-                        scaledScreenWidth: bgRoot.screen.width
-                        scaledScreenHeight: bgRoot.screen.height
-                        wallpaperScale: 1
-                        wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
-                    }
-                }
-            }
             // Still hard coded enabled for now
             // TODO: Add config entry and Settings switch to toggle/configure visualizer
             Repeater {
-                model: ScriptModel {
-                    values: bgRoot.meaningfulPlayers
-                }
+                model: ScriptModel { values: bgRoot.meaningfulPlayers }
                 delegate: WaveVisualizer {
                     required property MprisPlayer modelData
 
@@ -503,17 +481,13 @@ Variants {
                     anchors.bottom: parent.bottom
                     height: bgRoot.screen.height * 0.3
 
-                    live: bgRoot.visible && (bgRoot.activePlayer?.isPlaying ?? false)
+                    live: bgRoot.visible && modelData.playbackStatus === MprisPlaybackStatus.Playing
                     points: bgRoot.visualizerPoints
                     maxVisualizerValue: bgRoot.maxVisualizerValue
                     smoothing: bgRoot.visualizerSmoothing
 
                     transparency: 0.4
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 500
-                        }
-                    }
+                    Behavior on opacity { NumberAnimation { duration: 500 } }
                 }
             }
         }
