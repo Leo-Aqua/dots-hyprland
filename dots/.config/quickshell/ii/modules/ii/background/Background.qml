@@ -39,24 +39,45 @@ Variants {
         property int currentVolume: 0
 
         // Hide when fullscreen
-        property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
-        property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
-        visible: GlobalStates.screenLocked || (!(activeWorkspaceWithFullscreen != undefined)) || !Config?.options.background.hideWhenFullscreen
+        property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace
+                                                                                                 => workspace.monitor
+                                                                                                    && workspace.monitor.name
+                                                                                                    == monitor.name)
+        property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((
+                                                                                                 workspace.toplevels.values.filter(
+                                                                                                     window => window.wayland
+                                                                                                               ?.fullscreen)[0]
+                                                                                                 != undefined)
+                                                                                             && workspace.active))[0]
+        visible: GlobalStates.screenLocked || (!(activeWorkspaceWithFullscreen != undefined)) || !Config
+                 ?.options.background.hideWhenFullscreen
 
         // Workspaces
         property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
-        property list<var> relevantWindows: HyprlandData.windowList.filter(win => win.monitor == monitor?.id && win.workspace.id >= 0).sort((a, b) => a.workspace.id - b.workspace.id)
+        property list<var> relevantWindows: HyprlandData.windowList.filter(win => win.monitor == monitor?.id
+                                                                                  && win.workspace.id
+                                                                                  >= 0).sort((a, b)
+                                                                                             => a.workspace.id
+                                                                                                - b.workspace.id)
         property int firstWorkspaceId: relevantWindows[0]?.workspace.id || 1
         property int lastWorkspaceId: relevantWindows[relevantWindows.length - 1]?.workspace.id || 10
         property int workspaceChunkSize: Config?.options.bar.workspaces.shown ?? 10
         property int totalWorkspaces: Math.ceil(lastWorkspaceId / workspaceChunkSize) * workspaceChunkSize
         // Wallpaper
-        property bool wallpaperIsVideo: Config.options.background.wallpaperPath.endsWith(".mp4") || Config.options.background.wallpaperPath.endsWith(".webm") || Config.options.background.wallpaperPath.endsWith(".mkv") || Config.options.background.wallpaperPath.endsWith(".avi") || Config.options.background.wallpaperPath.endsWith(".mov")
-        property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : Config.options.background.wallpaperPath
+        property bool wallpaperIsVideo: Config.options.background.wallpaperPath.endsWith(".mp4")
+                                        || Config.options.background.wallpaperPath.endsWith(".webm")
+                                        || Config.options.background.wallpaperPath.endsWith(".mkv")
+                                        || Config.options.background.wallpaperPath.endsWith(".avi")
+                                        || Config.options.background.wallpaperPath.endsWith(".mov")
+        property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath :
+                                                          Config.options.background.wallpaperPath
         property bool wallpaperSafetyTriggered: {
             const enabled = Config.options.workSafety.enable.wallpaper;
-            const sensitiveWallpaper = (CF.StringUtils.stringListContainsSubstring(wallpaperPath.toLowerCase(), Config.options.workSafety.triggerCondition.fileKeywords));
-            const sensitiveNetwork = (CF.StringUtils.stringListContainsSubstring(Network.networkName.toLowerCase(), Config.options.workSafety.triggerCondition.networkNameKeywords));
+            const sensitiveWallpaper = (CF.StringUtils.stringListContainsSubstring(wallpaperPath.toLowerCase(),
+                                                                                   Config.options.workSafety.triggerCondition.fileKeywords));
+            const sensitiveNetwork = (CF.StringUtils.stringListContainsSubstring(
+                                          Network.networkName.toLowerCase(),
+                                          Config.options.workSafety.triggerCondition.networkNameKeywords));
             return enabled && sensitiveWallpaper && sensitiveNetwork;
         }
         readonly property real parallaxRation: Config.options.background.parallax.workspaceZoom
@@ -68,23 +89,27 @@ Variants {
         property real scaledWallpaperHeight: wallpaperHeight * effectiveWallpaperScale
         property real parallaxTotalPixelsX: Math.max(0, scaledWallpaperWidth - screen.width)
         property real parallaxTotalPixelsY: Math.max(0, scaledWallpaperHeight - screen.height)
-        readonly property bool verticalParallax: (Config.options.background.parallax.autoVertical && wallpaperHeight > wallpaperWidth) || Config.options.background.parallax.vertical
+        readonly property bool verticalParallax: (Config.options.background.parallax.autoVertical
+                                                  && wallpaperHeight > wallpaperWidth)
+                                                 || Config.options.background.parallax.vertical
         // Colors
         property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
         property color dominantColor: Appearance.colors.colPrimary // Default, to be changed
 
-        // MPRIS Artwork & Color Quantization
+        // MPRIS Artwork
         property var activeArtUrl: bgRoot.activePlayer?.trackArtUrl ?? ""
         property string artDownloadLocation: Directories.coverArt
         property string artFileName: bgRoot.activeArtUrl ? Qt.md5(bgRoot.activeArtUrl) : ""
-        property string artFilePath: bgRoot.artFileName ? `${bgRoot.artDownloadLocation}/${bgRoot.artFileName}` : ""
+        property string artFilePath: bgRoot.artFileName ? `${bgRoot.artDownloadLocation}/${bgRoot.artFileName
+                                                          }` : ""
 
         property bool artDownloaded: false
         // Use Qt.resolvedUrl exactly like playerController
         property string displayedArtFilePath: bgRoot.artDownloaded ? Qt.resolvedUrl(bgRoot.artFilePath) : ""
 
-        // Exact color binding from playerController
-        property color artDominantColor: CF.ColorUtils.mix((colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary), Appearance.colors.colPrimaryContainer, 0.8) || Appearance.m3colors.m3secondaryContainer
+        onCurrentVolumeChanged: {
+            console.log("Current volume: " + currentVolume);
+        }
 
         onArtFilePathChanged: {
             if (bgRoot.activeArtUrl.length === 0) {
@@ -106,42 +131,35 @@ Variants {
             property string targetFile: ""
             property string targetPath: ""
 
-            command: ["bash", "-c", `[ -f "${targetPath}" ] || curl -4 -sSL '${targetFile}' -o '${targetPath}'`]
+            command: ["bash", "-c", `[ -f "${targetPath}" ] || curl -4 -sSL '${targetFile}' -o '${targetPath
+                }'`]
             onExited: (exitCode, exitStatus) => {
                 bgRoot.artDownloaded = true;
             }
         }
 
-        ColorQuantizer {
-            id: colorQuantizer
-            source: bgRoot.displayedArtFilePath
-            depth: 0
-            rescaleSize: 1
-        }
-
-        property QtObject blendedColors: AdaptedMaterialScheme {
-            color: bgRoot.artDominantColor
-        }
-
         // Execute the script safely only when the color has updated and the image is ready
-        onArtDominantColorChanged: {
+        onArtDownloadedChanged: {
             if (bgRoot.artDownloaded && bgRoot.activePlayer && bgRoot.activePlayer.isPlaying) {
-                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
+                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "
+${bgRoot.artFilePath}" --noswitch`]);
             }
         }
 
+        // Set/Unset cover image colors on Play/Pause of player
         Connections {
             target: bgRoot.activePlayer ?? null
             enabled: bgRoot.activePlayer !== null
 
             function onIsPlayingChanged() {
                 if (bgRoot.activePlayer.isPlaying) {
-                    // Prevent running the script until the artwork is successfully downloaded.
                     if (bgRoot.artDownloaded && bgRoot.artFilePath.length > 0) {
-                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "
+${bgRoot.artFilePath}" --noswitch`]);
                     }
                 } else {
-                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
+                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath
+                                             } --noswitch`]);
                 }
             }
         }
@@ -150,7 +168,9 @@ Variants {
         property color colText: {
             if (wallpaperSafetyTriggered)
                 return CF.ColorUtils.mix(Appearance.colors.colOnLayer0, Appearance.colors.colPrimary, 0.75);
-            return (GlobalStates.screenLocked && shouldBlur) ? Appearance.colors.colOnLayer0 : CF.ColorUtils.colorWithLightness(Appearance.colors.colPrimary, (dominantColorIsDark ? 0.8 : 0.12));
+            return (GlobalStates.screenLocked && shouldBlur) ? Appearance.colors.colOnLayer0 : CF.ColorUtils.colorWithLightness(
+                                                                   Appearance.colors.colPrimary, (
+                                                                       dominantColorIsDark ? 0.8 : 0.12));
         }
         Behavior on colText {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -169,13 +189,16 @@ Variants {
                 // Find duplicates by trackTitle prefix
                 for (let j = i + 1; j < players.length; ++j) {
                     let p2 = players[j];
-                    if (p1.trackTitle && p2.trackTitle && (p1.trackTitle.includes(p2.trackTitle) || p2.trackTitle.includes(p1.trackTitle)) || (p1.position - p2.position <= 2 && p1.length - p2.length <= 2)) {
+                    if (p1.trackTitle && p2.trackTitle && (p1.trackTitle.includes(p2.trackTitle)
+                                                           || p2.trackTitle.includes(p1.trackTitle)) || (
+                                p1.position - p2.position <= 2 && p1.length - p2.length <= 2)) {
                         group.push(j);
                     }
                 }
 
                 // Pick the one with non-empty trackArtUrl, or fallback to the first
-                let chosenIdx = group.find(idx => players[idx].trackArtUrl && players[idx].trackArtUrl.length > 0);
+                let chosenIdx = group.find(idx => players[idx].trackArtUrl && players[idx].trackArtUrl.length
+                                                  > 0);
                 if (chosenIdx === undefined)
                     chosenIdx = group[0];
 
@@ -187,13 +210,14 @@ Variants {
 
         Process {
             id: cavaProc
-            running: bgRoot.activePlayer.isPlaying
+            running: bgRoot.activePlayer ? bgRoot.activePlayer.isPlaying : false
             onRunningChanged: {
                 if (!cavaProc.running) {
                     bgRoot.visualizerPoints = [];
                 }
             }
-            command: ["cava", "-p", `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config_for_background.txt`]
+            command: ["cava", "-p", `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)
+                }/cava/raw_output_config_for_background.txt`]
             stdout: SplitParser {
                 onRead: data => {
                     // Parse `;`-separated values into the visualizerPoints array
@@ -203,19 +227,26 @@ Variants {
             }
         }
 
+        Behavior on currentVolume {
+            SpringAnimation {
+                spring: 5.0 // How fast it reacts (higher = faster)
+                damping: 0.75 // How much it bounces before settling (lower = more bounce)
+                mass: 1.0
+            }
+        }
         Process {
             id: cavaVUProc
-            running: bgRoot.activePlayer.isPlaying
+            running: bgRoot.activePlayer ? bgRoot.activePlayer.isPlaying : false
             onRunningChanged: {
                 if (!cavaVUProc.running) {
                     bgRoot.currentVolume = 0;
                 }
             }
-            command: ["cava", "-p", `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config_for_vu_meter.txt`]
+            command: ["cava", "-p", `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)
+                }/cava/raw_output_config_for_vu_meter.txt`]
             stdout: SplitParser {
                 onRead: data => {
-                    bgRoot.currentVolume = parseFloat(data.replace(";", ""));
-
+                    bgRoot.currentVolume = parseInt(data, 10);
                 }
             }
         }
@@ -223,7 +254,9 @@ Variants {
         // Layer props
         screen: modelData
         exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: (GlobalStates.screenLocked && !scaleAnim.running) ? WlrLayer.Overlay : WlrLayer.Bottom
+        WlrLayershell.layer: (GlobalStates.screenLocked && !scaleAnim.running) ? WlrLayer.Overlay :
+                                                                                 WlrLayer.Bottom
+
         // WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.namespace: "quickshell:background"
         anchors {
@@ -302,7 +335,8 @@ Variants {
                     }
                     if (Config.options.background.parallax.enableSidebar) {
                         let sidebarFraction = bgRoot.parallaxRation / bgRoot.workspaceChunkSize / 2;
-                        usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction * GlobalStates.sidebarLeftOpen);
+                        usedFraction += (sidebarFraction * GlobalStates.sidebarRightOpen - sidebarFraction
+                                         * GlobalStates.sidebarLeftOpen);
                     }
                     return Math.max(0, Math.min(1, usedFraction));
                 }
@@ -406,27 +440,27 @@ Variants {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: bgRoot.blendedColors.colSecondaryContainerActive
+                    color: Appearance.m3colors.m3surfaceContainerHigh
                 }
 
                 SineCookie {
-
                     anchors.centerIn: parent
-                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 1.1 + bgRoot.currentVolume / 10
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 1.1
                     constantlyRotate: true
-                    color: blendedColors.colOnSecondaryContainer
+                    color: Appearance.colors.colPrimaryContainer
                     rotationSpeed: 0.01
                     sides: 15
+                    amplitude: bgRoot.currentVolume / 2
                 }
 
                 SineCookie {
-
                     anchors.centerIn: parent
-                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 2 - bgRoot.currentVolume / 10
-                    color: blendedColors.colOnPrimary
+                    implicitSize: Math.max(bgRoot.width, bgRoot.height) / 2
                     constantlyRotate: true
-                    rotationSpeed: -0.05
+                    color: Appearance.colors.colPrimary
+                    rotationSpeed: -0.03
                     sides: 7
+                    amplitude: bgRoot.currentVolume / 3 * -1
                 }
 
                 StyledImage {
@@ -448,9 +482,9 @@ Variants {
                     visible: false // Keep hidden so it only acts as an alpha texture
                     anchors.centerIn: parent
                     implicitSize: musicArtImage.implicitHeight
-
+                    amplitude: bgRoot.currentVolume / 10
                     constantlyRotate: true
-                    rotationSpeed: 0.1
+                    rotationSpeed: 0.05
                     sides: 5
                     opacity: 0.5
                 }
@@ -471,7 +505,9 @@ Variants {
             // Still hard coded enabled for now
             // TODO: Add config entry and Settings switch to toggle/configure visualizer
             Repeater {
-                model: ScriptModel { values: bgRoot.meaningfulPlayers }
+                model: ScriptModel {
+                    values: bgRoot.meaningfulPlayers
+                }
                 delegate: WaveVisualizer {
                     required property MprisPlayer modelData
 
@@ -487,7 +523,34 @@ Variants {
                     smoothing: bgRoot.visualizerSmoothing
 
                     transparency: 0.4
-                    Behavior on opacity { NumberAnimation { duration: 500 } }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 500
+                        }
+                    }
+                }
+            }
+
+            FadeLoader {
+                shown: Config.options.background.widgets.weather.enable
+                sourceComponent: WeatherWidget {
+                    screenWidth: bgRoot.screen.width
+                    screenHeight: bgRoot.screen.height
+                    scaledScreenWidth: bgRoot.screen.width
+                    scaledScreenHeight: bgRoot.screen.height
+                    wallpaperScale: 1
+                }
+            }
+
+            FadeLoader {
+                shown: Config.options.background.widgets.clock.enable
+                sourceComponent: ClockWidget {
+                    screenWidth: bgRoot.screen.width
+                    screenHeight: bgRoot.screen.height
+                    scaledScreenWidth: bgRoot.screen.width
+                    scaledScreenHeight: bgRoot.screen.height
+                    wallpaperScale: 1
+                    wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
                 }
             }
         }
