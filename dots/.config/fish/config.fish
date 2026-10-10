@@ -44,3 +44,14 @@ set -x OLLAMA_ORIGINS "http://*,https://*,onlyoffice://*"
 
 # init z (cd alternative)
 zoxide init fish | source
+
+# init fzf
+
+fzf --fish | source
+
+# view PKGBUILD function
+
+function pb
+    command yay -Gp $argv | bat -l PKGBUILD
+end
+complete -c pb -f -a '(yay -Pc)' -d 'AUR package'
