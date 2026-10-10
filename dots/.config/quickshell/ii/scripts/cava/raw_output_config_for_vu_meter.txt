@@ -3,6 +3,8 @@ mode = waves
 framerate = 60
 autosens = 1
 bars = 1
+lower_cutoff_freq = 20
+higher_cutoff_freq = 250
 
 [output]
 method = raw
@@ -10,7 +12,4 @@ raw_target = /dev/stdout
 data_format = ascii
 channels = mono
 mono_option = average
-
-
-
-
+ascii_max_range = 100
