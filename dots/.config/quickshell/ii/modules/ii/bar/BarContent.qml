@@ -125,15 +125,22 @@ Item { // Bar content region
         BarGroup {
             id: leftCenterGroup
             anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: root.centerSideModuleWidth + root.lyricsExtraWidth
+            implicitWidth: Math.max(
+                root.centerSideModuleWidth + root.lyricsExtraWidth,
+                (resourcesWidget.visible ? resourcesWidget.implicitWidth : 0)
+                    + (mediaWidget.visible ? mediaWidget.implicitWidth : 0)
+                    + leftCenterGroup.padding * 2
+            )
 
             Resources {
+                id: resourcesWidget
                 visible: !root.lyricsEnabled || root.useShortenedForm === 2
                 alwaysShowAllResources: root.useShortenedForm === 2
                 Layout.fillWidth: root.useShortenedForm === 2
             }
 
             Media {
+                id: mediaWidget
                 visible: root.useShortenedForm < 2
                 Layout.fillWidth: true
             }

@@ -172,14 +172,14 @@ ContentPage {
 
         ConfigSpinBox {
             enabled: Config.options.bar.resources.showMemory && !Config.options.bar.resources.alwaysShowMemory
-            text: Translation.tr("Show memory threshhold %")
-            value: Config.options.bar.resources.showMemoryThreshhold
+            text: Translation.tr("Show memory threshold %")
+            value: Config.options.bar.resources.showMemoryThreshold
             from: 0
             to: 100
             stepSize: 1
             onValueChanged: {
-                Config.options.bar.resources.showMemoryThreshhold = value;
-                console.log(Config.options.bar.resources.showMemoryThreshhold);
+                Config.options.bar.resources.showMemoryThreshold = value;
+                console.log(Config.options.bar.resources.showMemoryThreshold);
             }
         }
 
@@ -203,13 +203,13 @@ ContentPage {
 
         ConfigSpinBox {
             enabled: Config.options.bar.resources.showSwap && !Config.options.bar.resources.alwaysShowSwap
-            text: Translation.tr("Show swap threshhold %")
-            value: Config.options.bar.resources.showSwapThreshhold
+            text: Translation.tr("Show swap threshold %")
+            value: Config.options.bar.resources.showSwapThreshold
             from: 0
             to: 100
             stepSize: 1
             onValueChanged: {
-                Config.options.bar.resources.showSwapThreshhold = value;
+                Config.options.bar.resources.showSwapThreshold = value;
             }
         }
 
@@ -233,14 +233,45 @@ ContentPage {
 
         ConfigSpinBox {
             enabled: Config.options.bar.resources.showCPU && !Config.options.bar.resources.alwaysShowCpu
-            text: Translation.tr("Show CPU threshhold %")
-            value: Config.options.bar.resources.showCPUThreshhold
+            text: Translation.tr("Show CPU threshold %")
+            value: Config.options.bar.resources.showCPUThreshold
             from: 0
             to: 100
             stepSize: 1
             onValueChanged: {
-                Config.options.bar.resources.showCPUThreshhold = value;
-                console.log(Config.options.bar.resources.showCPUThreshhold);
+                Config.options.bar.resources.showCPUThreshold = value;
+                console.log(Config.options.bar.resources.showCPUThreshold);
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Show GPU")
+            buttonIcon: "empty_dashboard"
+            checked: Config.options.bar.resources.gpu.bar.showDGpu
+            onCheckedChanged: {
+                Config.options.bar.resources.gpu.bar.showDGpu = checked;
+            }
+        }
+
+        ConfigSwitch {
+            text: Translation.tr("Always show GPU")
+            checked: Config.options.bar.resources.alwaysShowGpu
+            enabled: Config.options.bar.resources.gpu.bar.showDGpu
+            onCheckedChanged: {
+                Config.options.bar.resources.alwaysShowGpu = checked;
+            }
+        }
+
+        ConfigSpinBox {
+            enabled: Config.options.bar.resources.gpu.bar.showDGpu && !Config.options.bar.resources.alwaysShowGpu
+            text: Translation.tr("Show GPU threshold %")
+            value: Config.options.bar.resources.showGPUThreshold
+            from: 0
+            to: 100
+            stepSize: 1
+            onValueChanged: {
+                Config.options.bar.resources.showGPUThreshold = value;
+                console.log(Config.options.bar.resources.showGPUThreshold);
             }
         }
     }

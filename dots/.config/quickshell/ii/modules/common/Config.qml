@@ -255,13 +255,15 @@ Singleton {
                 property bool vertical: false
                 property JsonObject resources: JsonObject {
                     property bool alwaysShowMemory: true
-                    property double showMemoryThreshhold: 10
+                    property double showMemoryThreshold: 10
 
                     property bool alwaysShowSwap: true
-                    property double showSwapThreshhold: 10
+                    property double showSwapThreshold: 10
                     property bool alwaysShowCpu: true
-                    property double showCPUThreshhold: 10
-                    property bool alwaysShowGPU: false
+                    property double showCPUThreshold: 10
+                    property bool alwaysShowGpu: false
+                    property double showGPUThreshold: 10
+                    
                     property bool memoryInGB: true
 
                     property bool showCPU: true

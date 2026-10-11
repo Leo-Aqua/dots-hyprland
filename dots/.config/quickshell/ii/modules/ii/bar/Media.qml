@@ -128,6 +128,8 @@ Item {
         Item {
             id: mediaTextContainer
             visible: Config.options.bar.verbose
+            implicitWidth: visible ? 100 : 0
+            Layout.minimumWidth: implicitWidth
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true
             Layout.fillHeight: true
