@@ -51,6 +51,13 @@ import Quickshell.Hyprland
 ShellRoot {
     id: root
     property string openRgbApplyScript: Quickshell.shellPath("scripts/colors/openRGB/apply_openrgb.py")
+    property string openRgbPython: {
+        const virtualEnv = Quickshell.env("ILLOGICAL_IMPULSE_VIRTUAL_ENV");
+        if (virtualEnv)
+            return `${virtualEnv}/bin/python`;
+        const stateHome = Quickshell.env("XDG_STATE_HOME") || `${Quickshell.env("HOME")}/.local/state`;
+        return `${stateHome}/quickshell/.venv/bin/python`;
+    }
     property bool openRgbStartupApplied: false
 
     // Stuff for every panel family
@@ -77,7 +84,7 @@ ShellRoot {
         if (!Config.options?.appearance?.openrgb?.applyOnStartup)
             return;
         openRgbStartupApplied = true;
-        openRgbApplyProc.command = ["python", openRgbApplyScript];
+        openRgbApplyProc.command = [openRgbPython, openRgbApplyScript];
         openRgbApplyProc.running = false;
         openRgbApplyProc.running = true;
     }

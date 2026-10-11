@@ -69,7 +69,7 @@ MAX_SEVER_START_ATTEMPTS = 10
 SERVER_START_RETRY_DELAY = 5
 
 xdg_state_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state"))
-xdg_config_home = os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.config"))
+xdg_config_home = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
 state_dir = os.path.join(xdg_state_home, "quickshell")
 
 with open(xdg_config_home + "/illogical-impulse/config.json", "r") as f:

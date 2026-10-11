@@ -16,6 +16,8 @@ pygobject
 tqdm
 numpy
 opencv-contrib-python
+openrgb-python
+scipy
 google-auth
 requests
 hyprland-config

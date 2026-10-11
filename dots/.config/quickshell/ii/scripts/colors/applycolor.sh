@@ -93,7 +93,12 @@ if [ -f "$CONFIG_FILE" ]; then
     enable_openrgb=$(jq -r '.appearance.openrgb.enable' "$CONFIG_FILE")
     if [ "$enable_openrgb" = "true" ]; then
         openrgb_duration=$(jq -r '.appearance.openrgb.fadeDuration' "$CONFIG_FILE")
-        python "$CONFIG_DIR/scripts/colors/openRGB/apply_openrgb.py" -d $openrgb_duration
+        openrgb_python="${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-$XDG_STATE_HOME/quickshell/.venv}/bin/python"
+        if [ -x "$openrgb_python" ]; then
+            "$openrgb_python" "$CONFIG_DIR/scripts/colors/openRGB/apply_openrgb.py" -d "$openrgb_duration"
+        else
+            printf 'OpenRGB Python environment not found: %s\n' "$openrgb_python" >&2
+        fi
     fi
 else
     echo "Config file not found at $CONFIG_FILE. Applying terminal theming by default."
