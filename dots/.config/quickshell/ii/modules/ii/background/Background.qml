@@ -97,52 +97,42 @@ Variants {
         property color dominantColor: Appearance.colors.colPrimary // Default, to be changed
 
         // MPRIS Artwork
-        property var activeArtUrl: bgRoot.activePlayer?.trackArtUrl ?? ""
+        property string artUrl: activePlayer?.trackArtUrl ?? ""
         property string artDownloadLocation: Directories.coverArt
-        property string artFileName: bgRoot.activeArtUrl ? Qt.md5(bgRoot.activeArtUrl) : ""
-        property string artFilePath: bgRoot.artFileName ? `${bgRoot.artDownloadLocation}/${bgRoot.artFileName
-                                                          }` : ""
+        property string artFileName: Qt.md5(artUrl)
+        property string artFilePath: `${artDownloadLocation}/${artFileName}`
 
         property bool artDownloaded: false
         // Use Qt.resolvedUrl exactly like playerController
         property string displayedArtFilePath: bgRoot.artDownloaded ? Qt.resolvedUrl(bgRoot.artFilePath) : ""
 
-        onCurrentVolumeChanged: {
-            console.log("Current volume: " + currentVolume);
-        }
-
+      
         onArtFilePathChanged: {
-            if (bgRoot.activeArtUrl.length === 0) {
-                bgRoot.artDominantColor = Appearance.m3colors.m3secondaryContainer;
-                return;
-            }
+            // Binding does not work in Process
+            coverArtDownloader.targetFile = bgRoot.artUrl 
+            coverArtDownloader.artFilePath = bgRoot.artFilePath
+            // Download
+            bgRoot.artDownloaded = false
+            coverArtDownloader.running = true
 
-            // Binding does not work in Process, assign manually
-            coverArtDownloader.targetFile = bgRoot.activeArtUrl;
-            coverArtDownloader.targetPath = bgRoot.artFilePath;
-
-            // Trigger download
-            bgRoot.artDownloaded = false;
-            coverArtDownloader.running = true;
         }
+
 
         Process { // Cover art downloader
             id: coverArtDownloader
-            property string targetFile: ""
-            property string targetPath: ""
-
-            command: ["bash", "-c", `[ -f "${targetPath}" ] || curl -4 -sSL '${targetFile}' -o '${targetPath
-                }'`]
+            property string targetFile: bgRoot.artUrl
+            property string artFilePath: bgRoot.artFilePath
+            command: [ "bash", "-c", `[ -f ${artFilePath} ] || curl -4 -sSL '${targetFile}' -o '${artFilePath}'` ]
             onExited: (exitCode, exitStatus) => {
-                bgRoot.artDownloaded = true;
+                bgRoot.artDownloaded = true
             }
         }
 
         // Execute the script safely only when the color has updated and the image is ready
         onArtDownloadedChanged: {
+            
             if (bgRoot.artDownloaded && bgRoot.activePlayer && bgRoot.activePlayer.isPlaying) {
-                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "
-${bgRoot.artFilePath}" --noswitch`]);
+                Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
             }
         }
 
@@ -154,12 +144,10 @@ ${bgRoot.artFilePath}" --noswitch`]);
             function onIsPlayingChanged() {
                 if (bgRoot.activePlayer.isPlaying) {
                     if (bgRoot.artDownloaded && bgRoot.artFilePath.length > 0) {
-                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "
-${bgRoot.artFilePath}" --noswitch`]);
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --image "${bgRoot.artFilePath}" --noswitch`]);
                     }
                 } else {
-                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath
-                                             } --noswitch`]);
+                    Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`]);
                 }
             }
         }
@@ -381,32 +369,6 @@ ${bgRoot.artFilePath}" --noswitch`]);
                 height: bgRoot.scaledWallpaperHeight
             }
 
-            Loader {
-                id: blurLoader
-                active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
-                anchors.fill: wallpaper
-                scale: GlobalStates.screenLocked ? Config.options.lock.blur.extraZoom : 1
-                Behavior on scale {
-                    NumberAnimation {
-                        id: scaleAnim
-                        duration: 400
-                        easing.type: Easing.BezierSpline
-                        easing.bezierCurve: Appearance.animationCurves.expressiveDefaultSpatial
-                    }
-                }
-                sourceComponent: GaussianBlur {
-                    source: wallpaper
-                    radius: GlobalStates.screenLocked ? Config.options.lock.blur.radius : 0
-                    samples: radius * 2 + 1
-
-                    Rectangle {
-                        opacity: GlobalStates.screenLocked ? 1 : 0
-                        anchors.fill: parent
-                        color: CF.ColorUtils.transparentize(Appearance.colors.colLayer0, 0.7)
-                    }
-                }
-            }
-
             Item {
                 id: maskSource
                 anchors.fill: parent
@@ -551,6 +513,31 @@ ${bgRoot.artFilePath}" --noswitch`]);
                     scaledScreenHeight: bgRoot.screen.height
                     wallpaperScale: 1
                     wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
+                }
+            }
+            Loader {
+                id: blurLoader
+                active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
+                anchors.fill: wallpaper
+                scale: GlobalStates.screenLocked ? Config.options.lock.blur.extraZoom : 1
+                Behavior on scale {
+                    NumberAnimation {
+                        id: scaleAnim
+                        duration: 400
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Appearance.animationCurves.expressiveDefaultSpatial
+                    }
+                }
+                sourceComponent: GaussianBlur {
+                    source: wallpaper
+                    radius: GlobalStates.screenLocked ? Config.options.lock.blur.radius : 0
+                    samples: radius * 2 + 1
+
+                    Rectangle {
+                        opacity: GlobalStates.screenLocked ? 1 : 0
+                        anchors.fill: parent
+                        color: CF.ColorUtils.transparentize(Appearance.colors.colLayer0, 0.7)
+                    }
                 }
             }
         }
