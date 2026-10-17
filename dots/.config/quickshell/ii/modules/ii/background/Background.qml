@@ -395,6 +395,29 @@ Variants {
                 }
             }
 
+            FadeLoader {
+                shown: Config.options.background.widgets.weather.enable
+                sourceComponent: WeatherWidget {
+                    screenWidth: bgRoot.screen.width
+                    screenHeight: bgRoot.screen.height
+                    scaledScreenWidth: bgRoot.screen.width
+                    scaledScreenHeight: bgRoot.screen.height
+                    wallpaperScale: 1
+                }
+            }
+
+            FadeLoader {
+                shown: Config.options.background.widgets.clock.enable
+                sourceComponent: ClockWidget {
+                    screenWidth: bgRoot.screen.width
+                    screenHeight: bgRoot.screen.height
+                    scaledScreenWidth: bgRoot.screen.width
+                    scaledScreenHeight: bgRoot.screen.height
+                    wallpaperScale: 1
+                    wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
+                }
+            }
+            
             Item {
                 id: musicWallpaperContent
                 anchors.fill: parent
@@ -493,28 +516,6 @@ Variants {
                 }
             }
 
-            FadeLoader {
-                shown: Config.options.background.widgets.weather.enable
-                sourceComponent: WeatherWidget {
-                    screenWidth: bgRoot.screen.width
-                    screenHeight: bgRoot.screen.height
-                    scaledScreenWidth: bgRoot.screen.width
-                    scaledScreenHeight: bgRoot.screen.height
-                    wallpaperScale: 1
-                }
-            }
-
-            FadeLoader {
-                shown: Config.options.background.widgets.clock.enable
-                sourceComponent: ClockWidget {
-                    screenWidth: bgRoot.screen.width
-                    screenHeight: bgRoot.screen.height
-                    scaledScreenWidth: bgRoot.screen.width
-                    scaledScreenHeight: bgRoot.screen.height
-                    wallpaperScale: 1
-                    wallpaperSafetyTriggered: bgRoot.wallpaperSafetyTriggered
-                }
-            }
             Loader {
                 id: blurLoader
                 active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
