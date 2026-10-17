@@ -78,9 +78,8 @@ with open(xdg_config_home + "/illogical-impulse/config.json", "r") as f:
 client = get_client()
 devices = config["appearance"]["openrgb"]["devices"]
 
-with open(state_dir + "/user/generated/color.txt", "r") as f:
-    new_color = hexToRGB(f.read())
-
+with open(state_dir + "/user/generated/colors.json", "r") as f:
+    new_color = hexToRGB(json.load(f)["primary"])
 
 if args.color != None:
     new_color = hexToRGB(args.color)
